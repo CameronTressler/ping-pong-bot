@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -58,6 +60,9 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN Private defines */
+
+extern int is_high;
+extern int count_us;
 
 /* USER CODE END Private defines */
 
