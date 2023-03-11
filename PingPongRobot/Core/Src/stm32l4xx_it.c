@@ -55,11 +55,8 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern TIM_HandleTypeDef htim2;
-/* USER CODE BEGIN EV */
 
-extern int is_high;
-extern int count_us;
+/* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
 
@@ -202,36 +199,34 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles TIM2 global interrupt.
+  * @brief This function handles EXTI line0 interrupt.
+  *
+  * This will be triggered by the rising or falling edge of an ultrasonic trigger.
   */
-void TIM2_IRQHandler(void)
+void EXTI0_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM2_IRQn 0 */
+  /* USER CODE BEGIN EXTI0_IRQn 0 */
 
-	int count_us_local;
-
-	if (is_high) {
-		count_us = TIM2->CNT;
-
-		is_high = 0;
-		TIM2->CCER &= ~(0b1 << 3);
-		TIM2->CCER &= ~(0b1 << 1);
-
-		count_us_local = count_us;
+	// If we're at the beginning of an echo.
+	if (ultra.count_of_echo_start == 0) {
+		ultra.count_of_echo_start = TIM4->CNT;
 	}
+
+	// Else we're at the end of an echo.
 	else {
-		TIM2->CNT = 0;
+		int elapsed_counts = TIM4->CNT - ultra.count_of_echo_start;
 
-		is_high = 1;
-		TIM2->CCER &= ~(0b1 << 3);
-		TIM2->CCER |= (0b1 << 1);
+		if (elapsed_counts > 0) {
+			ultra.distance_in = get_ultra_distance_in(elapsed_counts);
+			ultra.count_of_echo_start = 0;
+		}
 	}
 
-  /* USER CODE END TIM2_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim2);
-  /* USER CODE BEGIN TIM2_IRQn 1 */
+  /* USER CODE END EXTI0_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  /* USER CODE BEGIN EXTI0_IRQn 1 */
 
-  /* USER CODE END TIM2_IRQn 1 */
+  /* USER CODE END EXTI0_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
