@@ -55,7 +55,7 @@ static void MX_TIM4_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-
+extern void serial_transmit_bb(uint32_t tx_msg); // assembly routine for N64 TX
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
