@@ -15,16 +15,16 @@
  	// get write address for GPIOA ODR
  	// bit 0 corresponds to PA0
  	movw	r1,	#:lower16:GPIOA_ADDR
- 	movt	r1, #:upper16:GPIOA_ADDR
- 	add		r1,	r1, #GPIO_ODR_OFFSET
+ 	movt	r1,	#:upper16:GPIOA_ADDR
+ 	add	r1,	r1, #GPIO_ODR_OFFSET
 
  	// get initial write value
  	movw	r2,	#:lower16:INITIAL_WRITE_VAL
  	movt	r2,	#:upper16:INITIAL_WRITE_VAL
 
  	// setup loop variables
- 	mov		r3,	#0	// counter
- 	mov		r4,	#32	// condition -- number of bits in message
+ 	mov	r3,	#0	// counter
+ 	mov	r4,	#32	// condition -- number of bits in message
 
  	/*
 
@@ -33,7 +33,7 @@
  	*/
 
  	// transmit start bit (0)
- 	str		r2,	[r1]
+ 	str	r2,	[r1]
  	// noops for timing
  	nop
  	nop
@@ -42,26 +42,26 @@
 
  loop: // TODO: if iteration causes too much delay, unroll loop
  	// check loop condition
- 	cmp		r3,	r4
- 	bge		end
+ 	cmp	r3,	r4
+ 	bge	end
 
  	// write a bit to PA0
- 	mov		r5,	r2
- 	and		r6,	r0,	#1
- 	orr		r5,	r5, r6
- 	str		r5,	[r1]
+ 	mov	r5,	r2
+ 	and	r6,	r0,	#1
+ 	orr	r5,	r5, r6
+ 	str	r5,	[r1]
 
  	// shift message right
- 	lsr		r0,	r0, #1
+ 	lsr	r0,	r0, #1
 
  	// ++i
- 	add		r3,	r3, #1
+ 	add	r3,	r3, #1
  	b loop
 
  end:
  	// transmit stop bit (1)
- 	orr		r7,	r2,	#1
- 	str		r7,	[r1]
+ 	orr	r7,	r2,	#1
+ 	str	r7,	[r1]
  	// noops for timing
  	nop
  	nop
