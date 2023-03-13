@@ -16,7 +16,7 @@
  	// bit 0 corresponds to PA0
  	movw	r1,	#:lower16:GPIOA_ADDR
  	movt	r1,	#:upper16:GPIOA_ADDR
- 	add	r1,	r1, #GPIO_ODR_OFFSET
+ 	add	r1,	r1,	#GPIO_ODR_OFFSET
 
  	// get initial write value
  	movw	r2,	#:lower16:INITIAL_WRITE_VAL
@@ -48,14 +48,14 @@
  	// write a bit to PA0
  	mov	r5,	r2
  	and	r6,	r0,	#1
- 	orr	r5,	r5, r6
+ 	orr	r5,	r5,	r6
  	str	r5,	[r1]
 
  	// shift message right
- 	lsr	r0,	r0, #1
+ 	lsr	r0,	r0,	#1
 
  	// ++i
- 	add	r3,	r3, #1
+ 	add	r3,	r3,	#1
  	b loop
 
  end:
