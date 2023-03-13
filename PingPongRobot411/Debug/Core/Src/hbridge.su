@@ -1,0 +1,3 @@
+../Core/Src/hbridge.c:15:6:init_hbridges	16	static
+../Core/Src/hbridge.c:33:6:set_PWM	24	static
+../Core/Src/hbridge.c:39:7:get_PWM	16	static

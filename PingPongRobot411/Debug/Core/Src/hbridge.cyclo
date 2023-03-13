@@ -1,0 +1,3 @@
+hbridge.c:15:6:init_hbridges	1
+hbridge.c:33:6:set_PWM	1
+hbridge.c:39:7:get_PWM	1
