@@ -5,8 +5,8 @@ float get_ultra_distance_in(unsigned int count_us) {
 }
 
 void init_ultra(ultra_t* ultra) {
+	ultra->off_table = 0;
 	ultra->count_of_echo_start = 0;
-	ultra->distance_in = 0.0;
 }
 
 void update_ultra(ultra_t* ultra, unsigned int current_count) {
@@ -18,10 +18,6 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 
 	// Error state: end of echo appears to be before start of echo.
 	else if (current_count < ultra->count_of_echo_start) {
-		// Accept temporary error state with the hope of getting back on
-		// track in the next pulse.
-		ultra->distance_in = -1;
-
 		// Reset count so we now assume an echo has started but not finished,
 		// and count is low enough to be reset on the next trigger.
 		ultra->count_of_echo_start = 1;
@@ -30,11 +26,28 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 	// Else we're at the end of an echo.
 	else {
 		unsigned int elapsed_counts = current_count - ultra->count_of_echo_start;
-		ultra->distance_in = get_ultra_distance_in(elapsed_counts);
+
+		if (get_ultra_distance_in(elapsed_counts) > MAX_ON_TABLE_IN) {
+			if (ultra->off_table < 3) {
+				++ultra->off_table;
+			}
+		}
+		else {
+			if (ultra->off_table > 0) {
+				--ultra->off_table;
+			}
+		}
 
 		// Reset count for beginning of next echo.
 		ultra->count_of_echo_start = 0;
 	}
 }
 
-ultra_t ultras[2];
+unsigned int is_off_table(ultra_t* ultra) {
+	if (ultra->off_table >= 2) {
+		return 1;
+	}
+	return 0;
+}
+
+ultra_t ultras[NUM_ULTRAS];
