@@ -60,8 +60,8 @@ all: main-build
 main-build: PingPongRobot411.elf secondary-outputs
 
 # Tool invocations
-PingPongRobot411.elf PingPongRobot411.map: $(OBJS) $(USER_OBJS) C:\Users\Jennifer\Desktop\Programs\EECS\ 373\ping-pong-bot\PingPongRobot411\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "PingPongRobot411.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Jennifer\Desktop\Programs\EECS 373\ping-pong-bot\PingPongRobot411\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PingPongRobot411.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+PingPongRobot411.elf PingPongRobot411.map: $(OBJS) $(USER_OBJS) /home/catress/umich/eecs373/project/PingPongRobot411/STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "PingPongRobot411.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/catress/umich/eecs373/project/PingPongRobot411/STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="PingPongRobot411.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

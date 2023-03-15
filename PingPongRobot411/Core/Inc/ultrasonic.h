@@ -1,6 +1,8 @@
 #ifndef __ULTRASONIC_H
 #define __ULTRASONIC_H
 
+#define NUM_ULTRAS 2
+
 float get_ultra_distance_in(unsigned int count_us);
 
 typedef struct {
