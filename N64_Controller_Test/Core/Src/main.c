@@ -50,7 +50,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-extern void serial_transmit_bb(uint32_t tx_msg); // assembly routine to bitbang n64
+extern uint32_t joybus_communicate(uint32_t tx_msg); // assembly routine to bitbang n64
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -65,8 +65,6 @@ extern void serial_transmit_bb(uint32_t tx_msg); // assembly routine to bitbang 
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  uint8_t* txBuffer[32] = {0};
-  uint8_t* rxBuffer[32] = {0};
 
   /* USER CODE END 1 */
 
@@ -90,8 +88,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  txBuffer[0] = 0x80;
-  txBuffer[1] = 0x80;
+  uint32_t n64_status;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -104,7 +101,7 @@ int main(void)
 //    HAL_UART_Receive (&huart1, &rxBuffer, 32, 10);
 //	  uint32_t tx_msg = 0x8E888888;
 	  uint32_t tx_msg = 0xE8888888;
-	  serial_transmit_bb(tx_msg);
+	  n64_status = joybus_communicate(tx_msg);
 	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 

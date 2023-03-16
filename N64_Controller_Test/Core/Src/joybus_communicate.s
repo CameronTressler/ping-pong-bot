@@ -1,22 +1,27 @@
-	.global	serial_transmit_bb
+	.global	joybus_communicate
  	.p2align 2
 	.syntax unified
- 	.type	serial_transmit_bb,%function
- serial_transmit_bb:
+ 	.type	joybus_communicate,%function
+ joybus_communicate:
  	.fnstart
 
 	push {lr}
- 	push {r4-r7}
+ 	push {r4-r9}
 
  	.equ	GPIOA_ADDR, 		0x40020000
  	.equ	GPIO_ODR_OFFSET, 	0x14
  	.equ	INITIAL_WRITE_VAL,	0xFFFFFFFE
+ 	.equ    GPIOA_IDR_OFFSET,   0x10
 
  	// get write address for GPIOA ODR
  	// bit 0 corresponds to PA0
+ 	mov     r9, r1 //moves receive buffer starting addr into r9
  	movw	r1,	#:lower16:GPIOA_ADDR
  	movt	r1,	#:upper16:GPIOA_ADDR
  	add	r1,	r1,	#GPIO_ODR_OFFSET
+
+ 	// get read address for GPIOA IDR
+ 	add     r8, r1, #GPIOA_IDR_OFFSET
 
  	// get initial write value
  	movw	r2,	#:lower16:INITIAL_WRITE_VAL
@@ -103,18 +108,52 @@
  	nop
  	nop
  	nop
- 	nop
- 	nop
+// 	nop
+// 	nop
+
+ 	//start receiving button data
+ 	mov r5, #31 //loop iterator
+	mov r6, #0 //loop end condition
+rxLoop:
+	cmp r6, r5 //check if itearator = end cond
+	blt rxDone // if eq then end loop
+	ldr r1, [r8] //read bit
+ 	lsr r1, #1 //isolate bit
+ 	and r1, #1 //isolate bit
+ 	lsl r1, r5 //sbhift left by i
+ 	orr r0, r1 //or with output number
+ 	add r6, #1
+	b rxLoop
+rxDone:
 
 
-	pop {r4-r7}
+/*
+uint32_t n64val;
+mv r5, #31
+mv r6, #0
+for (int i = 31; i >= 0; ++i){
+	cmp r6, r5
+	blt rxDone
+	ldr r1, [r8] //read bit
+ 	lsr r1, #1 isolate bit
+ 	and r1, #1 isolate bit
+ 	lsl r1, #i //sbhift left by i
+ 	orr r1, #1 //or with output number
+ 	add r6, #1
+	b rxLoop
+
+}
+*/
+
+
+	pop {r4-r9}
 	pop {pc}
 
 /*
 #define GPIOA_ADDR 0x48000000
 #define GPIO_ODR_OFFSET 0x14
 #define INITIAL_WRITE_VAL 0xFFFFFFFE
-void serial_transmit_bb(uint32_t tx_msg) {
+void joybus_communicate(uint32_t tx_msg) {
 	uint32_t *gpio_write_addr = (uint32_t*) GPIOA_ADDR + GPIO_ODR_OFFSET;
 	// timing critical begins here
 	*gpio_write_addr = 0xFFFFFFFE; // transmit start bit

@@ -60,8 +60,8 @@ all: main-build
 main-build: N64_Controller_Test.elf secondary-outputs
 
 # Tool invocations
-N64_Controller_Test.elf N64_Controller_Test.map: $(OBJS) $(USER_OBJS) C:\Users\mkozarek\Desktop\N64_Controller_Test\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "N64_Controller_Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\mkozarek\Desktop\N64_Controller_Test\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="N64_Controller_Test.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+N64_Controller_Test.elf N64_Controller_Test.map: $(OBJS) $(USER_OBJS) /Users/mihirkozarekar/Desktop/ping-pong-bot/N64_Controller_Test/STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "N64_Controller_Test.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/Users/mihirkozarekar/Desktop/ping-pong-bot/N64_Controller_Test/STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="N64_Controller_Test.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
