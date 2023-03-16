@@ -1,5 +1,6 @@
-../Core/Src/serialDisplay.c:3:6:display_decrease_ball_count	4	static
-../Core/Src/serialDisplay.c:7:6:display_reset_ball_count	4	static
-../Core/Src/serialDisplay.c:11:6:display_init	8	static
-../Core/Src/serialDisplay.c:17:6:display_write_string	16	static
-../Core/Src/serialDisplay.c:21:6:writeHelloWorld	4	static
+../Core/Src/serialDisplay.c:5:6:increment_ball_count	4	static
+../Core/Src/serialDisplay.c:9:6:display_decrease_ball_count	4	static
+../Core/Src/serialDisplay.c:13:6:display_reset_ball_count	4	static
+../Core/Src/serialDisplay.c:17:6:display_init	8	static
+../Core/Src/serialDisplay.c:23:6:display_write_string	16	static
+../Core/Src/serialDisplay.c:27:6:writeHelloWorld	4	static

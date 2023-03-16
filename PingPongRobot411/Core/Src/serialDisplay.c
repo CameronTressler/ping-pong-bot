@@ -1,5 +1,11 @@
 #include "serialDisplay.h"
 
+display_t display;
+
+void increment_ball_count() {
+	++display.ball_count;
+}
+
 void display_decrease_ball_count(){
 
 }

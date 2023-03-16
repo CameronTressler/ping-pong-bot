@@ -6,9 +6,12 @@ typedef struct {
 	int screen;
 } display_t;
 
+extern display_t display;
 
 // Address
 #define DISPLAY_ADDR 0x4E
+
+void increment_ball_count();
 
 // Depends what we want messages to be
 void display_decrease_ball_count();
