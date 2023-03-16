@@ -20,8 +20,8 @@ void init_hbridges() {
 	hbridges[0].PWM = 0;
 
 	hbridges[1].CCR = (uint32_t*) (TIM4_OFFSET + TIM_CCR2_OFFSET);
-	hbridges[1].GPIOx = GPIOB;
-	hbridges[1].GPIO_Pin = 5;
+	hbridges[1].GPIOx = GPIOC;
+	hbridges[1].GPIO_Pin = 10;
 	hbridges[1].PinState = 0;
 	hbridges[1].PWM = 0;
 
@@ -43,14 +43,22 @@ void set_PWM(hbridge_t hbridge, float PWM) {
 
 	// If we go forwards
 	if (PWM >= 0) {
-		*(hbridge.CCR) = (uint32_t)((float) 65335)*PWM;
-		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, 0);
-		HAL_GPIO_WritePin(GPIOG, GPIO_PIN_1, 1);
+		*(hbridge.CCR) = (uint32_t)((float) 65335)* PWM;
+		HAL_GPIO_WritePin(hbridge.GPIOx, hbridge.GPIO_Pin, 0);
+		hbridge.PinState = 0;
+	} else {
+		*(hbridge.CCR) = (uint32_t)((float) 65335)* PWM * -1;
+		HAL_GPIO_WritePin(hbridge.GPIOx, hbridge.GPIO_Pin, 1);
+		hbridge.PinState = 1;
 	}
 }
 
 float get_PWM(hbridge_t hbridge) {
 	return hbridge.PWM;
+}
+
+int get_dir(hbridge_t hbridge) {
+	return hbridge.PinState;
 }
 
 

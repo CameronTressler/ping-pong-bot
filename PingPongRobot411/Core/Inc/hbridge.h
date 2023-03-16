@@ -2,6 +2,7 @@
 #define INC_HBRIDGE_H_
 
 #include <stdint.h>
+#include "main.h"
 
 #define TIM4_OFFSET 0x40000800 // Timer used for hbridge channels
 
@@ -22,9 +23,9 @@
 typedef struct {
 	float PWM;
 	uint32_t * CCR;
-	GPIO_TypeDef* GPIOx;
+	GPIO_TypeDef * GPIOx;
 	uint16_t GPIO_Pin;
-	GPIO_PinState PinState;
+	int PinState;
 } hbridge_t;
 
 extern hbridge_t hbridges[4];
@@ -39,5 +40,7 @@ void set_PWM(hbridge_t hbridge, float PWM);
 
 // Get PWM (0-1.0)
 float get_PWM(hbridge_t hbridge);
+
+int get_dir(hbridge_t hbridge);
 
 #endif /* INC_HBRIDGE_H_ */
