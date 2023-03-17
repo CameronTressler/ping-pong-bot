@@ -4,4 +4,4 @@ main.c:201:13:MX_I2C3_Init	2
 main.c:235:13:MX_TIM3_Init	6
 main.c:294:13:MX_TIM4_Init	7
 main.c:355:13:MX_GPIO_Init	1
-main.c:436:6:Error_Handler	1
+main.c:445:6:Error_Handler	1
