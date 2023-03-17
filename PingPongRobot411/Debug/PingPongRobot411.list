@@ -39,11 +39,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_line   0000dfb5  00000000  00000000  00030bf5  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0008a221  00000000  00000000  0003ebaa  2**0
+ 18 .debug_str    0008a209  00000000  00000000  0003ebaa  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000c8dcb  2**0
+ 19 .comment      00000050  00000000  00000000  000c8db3  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  0000356c  00000000  00000000  000c8e1c  2**2
+ 20 .debug_frame  0000356c  00000000  00000000  000c8e04  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -83,8 +83,8 @@ Disassembly of section .text:
  80001de:	bf08      	it	eq
  80001e0:	2800      	cmpeq	r0, #0
  80001e2:	bf1c      	itt	ne
- 80001e4:	f04f 31ff 	movne.w	r1, #4294967295
- 80001e8:	f04f 30ff 	movne.w	r0, #4294967295
+ 80001e4:	f04f 31ff 	movne.w	r1, #4294967295	; 0xffffffff
+ 80001e8:	f04f 30ff 	movne.w	r0, #4294967295	; 0xffffffff
  80001ec:	f000 b974 	b.w	80004d8 <__aeabi_idiv0>
  80001f0:	f1ad 0c08 	sub.w	ip, sp, #8
  80001f4:	e96d ce04 	strd	ip, lr, [sp, #-16]!
@@ -122,7 +122,7 @@ Disassembly of section .text:
  8000252:	4299      	cmp	r1, r3
  8000254:	d90a      	bls.n	800026c <__udivmoddi4+0x64>
  8000256:	eb1c 0303 	adds.w	r3, ip, r3
- 800025a:	f106 30ff 	add.w	r0, r6, #4294967295
+ 800025a:	f106 30ff 	add.w	r0, r6, #4294967295	; 0xffffffff
  800025e:	f080 811f 	bcs.w	80004a0 <__udivmoddi4+0x298>
  8000262:	4299      	cmp	r1, r3
  8000264:	f240 811c 	bls.w	80004a0 <__udivmoddi4+0x298>
@@ -137,7 +137,7 @@ Disassembly of section .text:
  8000280:	42a7      	cmp	r7, r4
  8000282:	d90a      	bls.n	800029a <__udivmoddi4+0x92>
  8000284:	eb1c 0404 	adds.w	r4, ip, r4
- 8000288:	f100 33ff 	add.w	r3, r0, #4294967295
+ 8000288:	f100 33ff 	add.w	r3, r0, #4294967295	; 0xffffffff
  800028c:	f080 810a 	bcs.w	80004a4 <__udivmoddi4+0x29c>
  8000290:	42a7      	cmp	r7, r4
  8000292:	f240 8107 	bls.w	80004a4 <__udivmoddi4+0x29c>
@@ -193,7 +193,7 @@ Disassembly of section .text:
  800031e:	4288      	cmp	r0, r1
  8000320:	d908      	bls.n	8000334 <__udivmoddi4+0x12c>
  8000322:	eb1c 0101 	adds.w	r1, ip, r1
- 8000326:	f103 38ff 	add.w	r8, r3, #4294967295
+ 8000326:	f103 38ff 	add.w	r8, r3, #4294967295	; 0xffffffff
  800032a:	d202      	bcs.n	8000332 <__udivmoddi4+0x12a>
  800032c:	4288      	cmp	r0, r1
  800032e:	f200 80cb 	bhi.w	80004c8 <__udivmoddi4+0x2c0>
@@ -207,7 +207,7 @@ Disassembly of section .text:
  8000348:	45a6      	cmp	lr, r4
  800034a:	d908      	bls.n	800035e <__udivmoddi4+0x156>
  800034c:	eb1c 0404 	adds.w	r4, ip, r4
- 8000350:	f100 31ff 	add.w	r1, r0, #4294967295
+ 8000350:	f100 31ff 	add.w	r1, r0, #4294967295	; 0xffffffff
  8000354:	d202      	bcs.n	800035c <__udivmoddi4+0x154>
  8000356:	45a6      	cmp	lr, r4
  8000358:	f200 80bb 	bhi.w	80004d2 <__udivmoddi4+0x2ca>
@@ -235,7 +235,7 @@ Disassembly of section .text:
  80003a2:	fa02 f206 	lsl.w	r2, r2, r6
  80003a6:	d90b      	bls.n	80003c0 <__udivmoddi4+0x1b8>
  80003a8:	eb1c 0101 	adds.w	r1, ip, r1
- 80003ac:	f108 3aff 	add.w	sl, r8, #4294967295
+ 80003ac:	f108 3aff 	add.w	sl, r8, #4294967295	; 0xffffffff
  80003b0:	f080 8088 	bcs.w	80004c4 <__udivmoddi4+0x2bc>
  80003b4:	4288      	cmp	r0, r1
  80003b6:	f240 8085 	bls.w	80004c4 <__udivmoddi4+0x2bc>
@@ -250,7 +250,7 @@ Disassembly of section .text:
  80003d4:	458e      	cmp	lr, r1
  80003d6:	d908      	bls.n	80003ea <__udivmoddi4+0x1e2>
  80003d8:	eb1c 0101 	adds.w	r1, ip, r1
- 80003dc:	f100 34ff 	add.w	r4, r0, #4294967295
+ 80003dc:	f100 34ff 	add.w	r4, r0, #4294967295	; 0xffffffff
  80003e0:	d26c      	bcs.n	80004bc <__udivmoddi4+0x2b4>
  80003e2:	458e      	cmp	lr, r1
  80003e4:	d96a      	bls.n	80004bc <__udivmoddi4+0x2b4>
@@ -292,7 +292,7 @@ Disassembly of section .text:
  8000450:	fa04 f402 	lsl.w	r4, r4, r2
  8000454:	d908      	bls.n	8000468 <__udivmoddi4+0x260>
  8000456:	eb1c 0303 	adds.w	r3, ip, r3
- 800045a:	f100 38ff 	add.w	r8, r0, #4294967295
+ 800045a:	f100 38ff 	add.w	r8, r0, #4294967295	; 0xffffffff
  800045e:	d22f      	bcs.n	80004c0 <__udivmoddi4+0x2b8>
  8000460:	429e      	cmp	r6, r3
  8000462:	d92d      	bls.n	80004c0 <__udivmoddi4+0x2b8>
@@ -307,7 +307,7 @@ Disassembly of section .text:
  800047c:	428b      	cmp	r3, r1
  800047e:	d908      	bls.n	8000492 <__udivmoddi4+0x28a>
  8000480:	eb1c 0101 	adds.w	r1, ip, r1
- 8000484:	f106 38ff 	add.w	r8, r6, #4294967295
+ 8000484:	f106 38ff 	add.w	r8, r6, #4294967295	; 0xffffffff
  8000488:	d216      	bcs.n	80004b8 <__udivmoddi4+0x2b0>
  800048a:	428b      	cmp	r3, r1
  800048c:	d914      	bls.n	80004b8 <__udivmoddi4+0x2b0>
@@ -1354,7 +1354,7 @@ static void MX_GPIO_Init(void)
  8000b1c:	4831      	ldr	r0, [pc, #196]	; (8000be4 <MX_GPIO_Init+0x184>)
  8000b1e:	f000 fc3d 	bl	800139c <HAL_GPIO_Init>
 
-  /*Configure GPIO pins : PA0 PA1 */
+  /*Configure GPIO pins : PC0 PC1 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
  8000b22:	2303      	movs	r3, #3
  8000b24:	617b      	str	r3, [r7, #20]
@@ -1364,10 +1364,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
  8000b2c:	2300      	movs	r3, #0
  8000b2e:	61fb      	str	r3, [r7, #28]
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
  8000b30:	f107 0314 	add.w	r3, r7, #20
  8000b34:	4619      	mov	r1, r3
- 8000b36:	482a      	ldr	r0, [pc, #168]	; (8000be0 <MX_GPIO_Init+0x180>)
+ 8000b36:	482b      	ldr	r0, [pc, #172]	; (8000be4 <MX_GPIO_Init+0x184>)
  8000b38:	f000 fc30 	bl	800139c <HAL_GPIO_Init>
 
   /*Configure GPIO pins : USART_TX_Pin USART_RX_Pin */
@@ -2498,7 +2498,7 @@ __weak HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
     HAL_NVIC_SetPriority(SysTick_IRQn, TickPriority, 0U);
  80010c4:	2200      	movs	r2, #0
  80010c6:	6879      	ldr	r1, [r7, #4]
- 80010c8:	f04f 30ff 	mov.w	r0, #4294967295
+ 80010c8:	f04f 30ff 	mov.w	r0, #4294967295	; 0xffffffff
  80010cc:	f000 f92f 	bl	800132e <HAL_NVIC_SetPriority>
     uwTickPrio = TickPriority;
  80010d0:	4a06      	ldr	r2, [pc, #24]	; (80010ec <HAL_InitTick+0x5c>)
@@ -2591,7 +2591,7 @@ __weak void HAL_Delay(uint32_t Delay)
   /* Add a freq to guarantee minimum wait */
   if (wait < HAL_MAX_DELAY)
  8001142:	68fb      	ldr	r3, [r7, #12]
- 8001144:	f1b3 3fff 	cmp.w	r3, #4294967295
+ 8001144:	f1b3 3fff 	cmp.w	r3, #4294967295	; 0xffffffff
  8001148:	d005      	beq.n	8001156 <HAL_Delay+0x26>
   {
     wait += (uint32_t)(uwTickFreq);
@@ -2824,7 +2824,7 @@ __STATIC_INLINE uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t P
 
   return (
            ((PreemptPriority & (uint32_t)((1UL << (PreemptPriorityBits)) - 1UL)) << SubPriorityBits) |
- 80012a0:	f04f 32ff 	mov.w	r2, #4294967295
+ 80012a0:	f04f 32ff 	mov.w	r2, #4294967295	; 0xffffffff
  80012a4:	69bb      	ldr	r3, [r7, #24]
  80012a6:	fa02 f303 	lsl.w	r3, r2, r3
  80012aa:	43da      	mvns	r2, r3
@@ -2833,7 +2833,7 @@ __STATIC_INLINE uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t P
  80012b0:	697b      	ldr	r3, [r7, #20]
  80012b2:	409a      	lsls	r2, r3
            ((SubPriority     & (uint32_t)((1UL << (SubPriorityBits    )) - 1UL)))
- 80012b4:	f04f 31ff 	mov.w	r1, #4294967295
+ 80012b4:	f04f 31ff 	mov.w	r1, #4294967295	; 0xffffffff
  80012b8:	697b      	ldr	r3, [r7, #20]
  80012ba:	fa01 f303 	lsl.w	r3, r1, r3
  80012be:	43d9      	mvns	r1, r3
@@ -2879,7 +2879,7 @@ __STATIC_INLINE uint32_t SysTick_Config(uint32_t ticks)
  80012f0:	6053      	str	r3, [r2, #4]
   NVIC_SetPriority (SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL); /* set Priority for Systick Interrupt */
  80012f2:	210f      	movs	r1, #15
- 80012f4:	f04f 30ff 	mov.w	r0, #4294967295
+ 80012f4:	f04f 30ff 	mov.w	r0, #4294967295	; 0xffffffff
  80012f8:	f7ff ff8e 	bl	8001218 <__NVIC_SetPriority>
   SysTick->VAL   = 0UL;                                             /* Load the SysTick Counter Value */
  80012fc:	4b05      	ldr	r3, [pc, #20]	; (8001314 <SysTick_Config+0x40>)
