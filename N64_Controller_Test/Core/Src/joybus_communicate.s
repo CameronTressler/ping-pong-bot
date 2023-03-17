@@ -181,6 +181,8 @@ rxLoop:
 	ldr r9, [r8] //read bit
 	str r6, [r11] // TESTING
 	str r7, [r11] // TESTING
+	nop
+	nop
 	/*
 	nop
 	nop
