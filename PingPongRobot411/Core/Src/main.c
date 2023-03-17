@@ -117,6 +117,8 @@ int main(void)
 
   init_hbridges();
 
+  display_init();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
