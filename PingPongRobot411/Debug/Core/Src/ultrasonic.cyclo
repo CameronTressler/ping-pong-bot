@@ -1,4 +1,0 @@
-ultrasonic.c:3:7:get_ultra_distance_in	1
-ultrasonic.c:7:6:init_ultra	1
-ultrasonic.c:12:6:update_ultra	6
-ultrasonic.c:46:14:is_off_table	2

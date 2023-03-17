@@ -1,3 +1,0 @@
-../Core/Src/ultrasonic.c:3:7:get_ultra_distance_in	16	static
-../Core/Src/ultrasonic.c:7:6:init_ultra	16	static
-../Core/Src/ultrasonic.c:12:6:update_ultra	24	static

@@ -1,4 +1,0 @@
-hbridge.c:15:6:init_hbridges	1
-hbridge.c:41:6:set_PWM	2
-hbridge.c:56:7:get_PWM	1
-hbridge.c:60:5:get_dir	1

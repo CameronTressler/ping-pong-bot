@@ -1,8 +1,0 @@
-serialDisplay.c:7:6:increment_ball_count	1
-serialDisplay.c:11:6:display_decrease_ball_count	1
-serialDisplay.c:15:6:display_reset_ball_count	1
-serialDisplay.c:19:6:display_send_data	1
-serialDisplay.c:31:6:display_init	1
-serialDisplay.c:57:6:display_write_string	2
-serialDisplay.c:61:6:writeHelloWorld	1
-serialDisplay.c:65:6:display_send_cmd	1
