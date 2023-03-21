@@ -4,17 +4,76 @@
 
 display_t display;
 
+/*
+ * General TODO;
+ *  - Finalize buttons for mn
+ */
+
+// Increases ball count by one and updates display
 void increment_ball_count() {
 	++display.ball_count;
+
+	char text[20];
+	sprintf(text, "%d", display.ball_count);
+	display_write_string("Balls : " + text);
+	display.top_text = "Balls: " + text;
+	display_write_string(display.bottom_text);
 }
 
+// Decreases ball count by one and updates display
 void decrement_ball_count(){
+	--display.ball_count;
 
+	// Update display
+	char text[20];
+	sprintf(text, "%d", display.ball_count);
+	display_write_string("Balls : " + text);
+	display.top_text = "Balls: " + text;
+	display_write_string(display.bottom_text);
 }
 
+
+// Resets value of ball count to BALL_COUNT defined in serialDisplay.h
 void display_reset_ball_count(){
+	display.ball_count = BALL_COUNT;
 
+	// Update display
+	char text[20];
+	sprintf(text, "%d", display.ball_count);
+	display_write_string("Balls : " + text);
+	display.top_text = "Balls: " + text;
+	display_write_string(display.bottom_text);
 }
+
+void display_freeplay() {
+	display.bottom_text = "Free-Play";
+	display.top_text = "Launch: A"; // TODO: what button is this
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_playback_record() {
+	display.bottom_text = "RECORDING...";
+	display.top_text = "RECORDING";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_playback_relocate(){
+	display.bottom_text = "Play Back";
+	display.top_text = "Relocate";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_playback_begin(){
+	display.bottom_text = "Play Back";
+	display.top_text = "Press A"; // TODO: what button is this
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_
 
 void display_send_data(char data) {
 	char data_u, data_l;
@@ -58,9 +117,6 @@ void display_write_string(char *str){
 	while (*str) display_send_data (*str++);
 }
 
-void writeHelloWorld(){
-
-}
 
 void display_send_cmd (char cmd)
 {

@@ -66,6 +66,7 @@ static void MX_I2C3_Init(void);
 /* USER CODE BEGIN 0 */
 
 extern hbridge_t hbridges[4];
+extern display_t display;
 
 /* USER CODE END 0 */
 

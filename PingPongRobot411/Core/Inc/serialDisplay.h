@@ -7,6 +7,9 @@
 typedef struct {
 	int ball_count;
 	int screen;
+	char *top_text;
+	char *bottom_text;
+
 } display_t;
 
 extern I2C_HandleTypeDef hi2c3;
@@ -26,14 +29,23 @@ void display_init();
 
 void display_write_string(char *str);
 
-void writeHelloWorld();
-
 void display_send_cmd(char cmd);
+
+void display_playback_record();
+
+void display_playback_relocate();
+
+void display_playback_begin();
+
+void display_freeplay();
 
 // Commands
 #define SPECIAL_COMMAND 0xFE
 #define CLEAR_CMD 0x01
 #define ON_OFF_CMD 0x08
+
+// Random
+#define BALL_COUNT 20 // idk about this lol
 
 
 #endif
