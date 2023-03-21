@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include "ultrasonic.h"
 #include "hbridge.h"
+#include "n64.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,7 +59,7 @@ static void MX_TIM4_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_I2C3_Init(void);
 /* USER CODE BEGIN PFP */
-extern uint32_t n64_read(uint32_t tx_msg); //n64 controller read button status
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -128,7 +129,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	n64_status = n64_read(0xE8888888);
+	n64_status = n64_read(N64_POLL);
 	  // hbridge_t hbridgelol = hbridges[0];
 	HAL_Delay(50);
 	set_PWM(hbridges[0], 0.5);

@@ -17,41 +17,39 @@
  	.equ	GPIOA_ADDR, 		0x40020000
  	.equ	GPIO_ODR_OFFSET, 	0x14
  	.equ	INITIAL_WRITE_VAL,	0xFFFFFFFE
- 	.equ    GPIOA_IDR_OFFSET,   0x10
+ 	.equ    GPIO_IDR_OFFSET,   0x10
+ 	.equ 	GPIOB_ADDR, 		0x40020400
 
- 	// TESTING CONSTANTS
- 	.equ	GPIOB_ADDR,			0x40020400
- 	movw	r11,	#:lower16:GPIOB_ADDR
- 	movt	r11,	#:upper16:GPIOB_ADDR
- 	add		r11, #GPIO_ODR_OFFSET
+ 	movw r11, #:lower16:GPIOB_ADDR
+ 	movt r11, #:upper16:GPIOB_ADDR
+ 	add	r11, #GPIO_ODR_OFFSET
 
  	// get write address for GPIOA ODR
  	// bit 0 corresponds to PA0
- 	mov     r9, r1 //moves receive buffer starting addr into r9
- 	movw	r1,	#:lower16:GPIOA_ADDR
- 	movt	r1,	#:upper16:GPIOA_ADDR
+ 	mov r9, r1 //moves receive buffer starting addr into r9
+ 	movw r1, #:lower16:GPIOA_ADDR
+ 	movt r1, #:upper16:GPIOA_ADDR
 
- 	// get read address for GPIOA IDR
- 	add     r8, r1, #GPIOA_IDR_OFFSET
-
+ 	// get read and write addresses for GPIO
+ 	add r8, r1, #GPIO_IDR_OFFSET
  	add	r1,	r1,	#GPIO_ODR_OFFSET
 
-
  	// get initial write value
- 	movw	r2,	#:lower16:INITIAL_WRITE_VAL
- 	movt	r2,	#:upper16:INITIAL_WRITE_VAL
+ 	movw r2, #:lower16:INITIAL_WRITE_VAL
+ 	movt r2, #:upper16:INITIAL_WRITE_VAL
 
  	// setup loop variables
  	mov	r3,	#0	// counter
  	mov	r4,	#32	// condition -- number of bits in message
 
- 	/*
- 		BEGIN TIMING CRITICAL SECTION
- 	*/
+ 	/*********************************
+	 *                               *
+	 * BEGIN TIMING CRITICAL SECTION *
+	 *                               *
+ 	 *********************************/ 
 
  	// transmit start bit (0)
  	str	r2,	[r1]
- 	// noops for timing
  	nop
  	nop
  	nop
@@ -80,7 +78,7 @@
  	// ++i
  	add	r3,	r3,	#1
 
- 	// noop for timing
+	// timing
  	nop
  	nop
  	nop
@@ -90,7 +88,7 @@
  	b loop
 
  end:
- 	// transmit stop bit (011)
+ 	// transmit stop bits (011)
  	str r2, [r1]
  	nop
  	nop
@@ -125,12 +123,19 @@
 // 	nop
 // 	nop
 
- 	//start receiving button data
+ 	
+	/*********************************
+	 *                               *
+	 *   BEGIN DATA RECEIVE SECTION  *
+	 *                               *
+ 	 *********************************/ 
 
+	// loop counts down from 31 --> 0
  	mov r5, #31 //loop iterator
 	mov r6, #0 //loop end condition
 	mov r0, #0
 	mov r7, #1
+
 	nop
 	nop
 	nop
@@ -176,10 +181,14 @@
 	nop
 
 rxLoop:
-	cmp r5, r6 //check if itearator = end cond
+	cmp r5, r6 //check if iterator = end cond
 	blt rxDone // if eq then end loop
 	ldr r9, [r8] //read bit
-	str r6, [r11] // TESTING
+
+	// TODO: store instructions to r11 (GPIOB) disable the GPIOB port
+	// but it does not seem to work without them, even when writing
+	// to sp.
+	str r6, [r11] // TESTING 
 	str r7, [r11] // TESTING
 	nop
 	nop
@@ -191,11 +200,13 @@ rxLoop:
 	nop
 	nop
 	*/
+
  	lsr r9, #1 //isolate bit
  	and r9, #1 //isolate bit
- 	lsl r9, r5 //sbhift left by i
+ 	lsl r9, r5 //shift left by i
  	orr r0, r9 //or with output number
  	sub r5, #1
+
  	nop
  	nop
  	nop
@@ -243,29 +254,8 @@ rxLoop:
  	nop
 
 	b rxLoop
+
 rxDone:
-
-	str r6, [r11] // TESTING
-
-
-/*
-uint32_t n64val;
-mv r5, #31
-mv r6, #0
-for (int i = 31; i >= 0; ++i){
-	cmp r6, r5
-	blt rxDone
-	ldr r1, [r8] //read bit
- 	lsr r1, #1 isolate bit
- 	and r1, #1 isolate bit
- 	lsl r1, #i //sbhift left by i
- 	orr r1, #1 //or with output number
- 	add r6, #1
-	b rxLoop
-
-}
-*/
-
 
 	pop {r4-r11}
 	pop {pc}
@@ -286,5 +276,21 @@ void joybus_communicate(uint32_t tx_msg) {
 		tx_msg >>= 1;
 	}
 	*gpio_write_addr = 0xFFFFFFFF; // transmit stop bit
+}
+
+uint32_t n64val;
+mv r5, #31
+mv r6, #0
+for (int i = 31; i >= 0; ++i){
+	cmp r6, r5
+	blt rxDone
+	ldr r1, [r8] //read bit
+ 	lsr r1, #1 isolate bit
+ 	and r1, #1 isolate bit
+ 	lsl r1, #i //sbhift left by i
+ 	orr r1, #1 //or with output number
+ 	add r6, #1
+	b rxLoop
+
 }
 */
