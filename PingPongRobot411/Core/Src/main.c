@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
 #include "ultrasonic.h"
+#include "odometry.h"
 #include "hbridge.h"
 #include "n64.h"
 /* USER CODE END Includes */
@@ -120,6 +121,8 @@ int main(void)
 
   display_init();
 
+  init_imu();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -129,24 +132,26 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	n64_status = n64_read(N64_POLL);
-	  // hbridge_t hbridgelol = hbridges[0];
-	HAL_Delay(50);
-	set_PWM(hbridges[0], 0.5);
-	HAL_Delay(50);
-	set_PWM(hbridges[1], 0.5);
-	HAL_Delay(50);
-	set_PWM(hbridges[2], 0.5);
-	HAL_Delay(50);
-	set_PWM(hbridges[3], 0.5);
-	HAL_Delay(50);
-		set_PWM(hbridges[0], 0.25);
-		HAL_Delay(50);
-		set_PWM(hbridges[1], 0.25);
-		HAL_Delay(50);
-		set_PWM(hbridges[2], 0.25);
-		HAL_Delay(50);
-		set_PWM(hbridges[3], 0.25);
+//	n64_status = n64_read(N64_POLL);
+//	  // hbridge_t hbridgelol = hbridges[0];
+//	HAL_Delay(50);
+//	set_PWM(hbridges[0], 0.5);
+//	HAL_Delay(50);
+//	set_PWM(hbridges[1], 0.5);
+//	HAL_Delay(50);
+//	set_PWM(hbridges[2], 0.5);
+//	HAL_Delay(50);
+//	set_PWM(hbridges[3], 0.5);
+//	HAL_Delay(50);
+//		set_PWM(hbridges[0], 0.25);
+//		HAL_Delay(50);
+//		set_PWM(hbridges[1], 0.25);
+//		HAL_Delay(50);
+//		set_PWM(hbridges[2], 0.25);
+//		HAL_Delay(50);
+//		set_PWM(hbridges[3], 0.25);
+
+	  // update_odom(&odometry);
   }
   /* USER CODE END 3 */
 }
