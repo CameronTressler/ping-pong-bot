@@ -67,6 +67,7 @@ static void MX_I2C3_Init(void);
 /* USER CODE BEGIN 0 */
 
 extern hbridge_t hbridges[4];
+extern n64_t n64_status;
 
 /* USER CODE END 0 */
 
@@ -86,7 +87,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint32_t n64_status; //initialize n64 status variable
   // Initiliaze ultrasonics.
   for (unsigned int i = 0; i < NUM_ULTRAS; ++i) {
 	  init_ultra(ultras + i);
@@ -121,6 +121,8 @@ int main(void)
 
   display_init();
 
+  n64_init(&n64_status);
+
   init_imu();
 
   /* USER CODE END 2 */
@@ -130,9 +132,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
-//	n64_status = n64_read(N64_POLL);
+	  n64_read(N64_POLL, &n64_status);
+	  HAL_Delay(50);
+
+
 //	  // hbridge_t hbridgelol = hbridges[0];
 //	HAL_Delay(50);
 //	set_PWM(hbridges[0], 0.5);

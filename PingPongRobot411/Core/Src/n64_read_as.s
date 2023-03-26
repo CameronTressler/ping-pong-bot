@@ -1,8 +1,8 @@
-	.global	n64_read
+	.global	n64_read_as
  	.p2align 2
 	.syntax unified
- 	.type	n64_read,%function
- n64_read:
+ 	.type	n64_read_as,%function
+ n64_read_as:
  	.fnstart
 
 	push {lr}
@@ -61,10 +61,10 @@
  	nop
 
 
- loop: // TODO: if iteration causes too much delay, unroll loop
+ txLoop: // TODO: if iteration causes too much delay, unroll loop
  	// check loop condition
  	cmp	r3,	r4
- 	bge	end
+ 	bge	txDone
 
  	// write a bit to PA0
  	mov	r5,	r2
@@ -85,9 +85,9 @@
  	nop
  	nop
 
- 	b loop
+ 	b txLoop
 
- end:
+ txDone:
  	// transmit stop bits (011)
  	str r2, [r1]
  	nop
