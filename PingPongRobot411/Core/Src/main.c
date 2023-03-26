@@ -67,7 +67,6 @@ static void MX_I2C3_Init(void);
 /* USER CODE BEGIN 0 */
 
 extern hbridge_t hbridges[4];
-extern n64_t n64_status;
 
 /* USER CODE END 0 */
 
@@ -78,6 +77,7 @@ extern n64_t n64_status;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	n64_t n64_status;
 
   /* USER CODE END 1 */
 

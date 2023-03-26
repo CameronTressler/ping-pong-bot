@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include "cmsis_gcc.h"
 
-n64_t n64_status;
-
 void n64_init(n64_t *n64_state) {
 	n64_update(0, n64_state);
 }
