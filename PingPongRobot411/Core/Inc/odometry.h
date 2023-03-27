@@ -4,7 +4,7 @@
 #include "main.h"
 
 // The IMU communicates over I2C with the following address.
-#define IMU_ADDR 0x29
+#define IMU_ADDR 0x28
 
 // Register address for setting power mode.
 #define PWR_MODE_REG 0x3E

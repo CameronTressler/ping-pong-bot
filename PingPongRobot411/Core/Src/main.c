@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdint.h>
 #include "ultrasonic.h"
+#include "odometry.h"
 #include "hbridge.h"
 #include "n64.h"
 /* USER CODE END Includes */
@@ -77,6 +78,7 @@ extern display_t display;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	n64_t n64_status;
 
   /* USER CODE END 1 */
 
@@ -86,7 +88,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  uint32_t n64_status; //initialize n64 status variable
   // Initiliaze ultrasonics.
   for (unsigned int i = 0; i < NUM_ULTRAS; ++i) {
 	  init_ultra(ultras + i);
@@ -121,6 +122,10 @@ int main(void)
 
   display_init();
 
+  n64_init(&n64_status);
+
+  init_imu();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,26 +133,30 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
-	n64_status = n64_read(N64_POLL);
-	  // hbridge_t hbridgelol = hbridges[0];
-	HAL_Delay(50);
-	set_PWM(hbridges[0], 0.5);
-	HAL_Delay(50);
-	set_PWM(hbridges[1], 0.5);
-	HAL_Delay(50);
-	set_PWM(hbridges[2], 0.5);
-	HAL_Delay(50);
-	set_PWM(hbridges[3], 0.5);
-	HAL_Delay(50);
-		set_PWM(hbridges[0], 0.25);
-		HAL_Delay(50);
-		set_PWM(hbridges[1], 0.25);
-		HAL_Delay(50);
-		set_PWM(hbridges[2], 0.25);
-		HAL_Delay(50);
-		set_PWM(hbridges[3], 0.25);
+	  n64_read(N64_POLL, &n64_status);
+	  HAL_Delay(50);
+
+
+//	  // hbridge_t hbridgelol = hbridges[0];
+//	HAL_Delay(50);
+//	set_PWM(hbridges[0], 0.5);
+//	HAL_Delay(50);
+//	set_PWM(hbridges[1], 0.5);
+//	HAL_Delay(50);
+//	set_PWM(hbridges[2], 0.5);
+//	HAL_Delay(50);
+//	set_PWM(hbridges[3], 0.5);
+//	HAL_Delay(50);
+//		set_PWM(hbridges[0], 0.25);
+//		HAL_Delay(50);
+//		set_PWM(hbridges[1], 0.25);
+//		HAL_Delay(50);
+//		set_PWM(hbridges[2], 0.25);
+//		HAL_Delay(50);
+//		set_PWM(hbridges[3], 0.25);
+
+	  // update_odom(&odometry);
   }
   /* USER CODE END 3 */
 }
@@ -172,12 +181,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 16;
-  RCC_OscInitStruct.PLL.PLLN = 336;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -187,12 +191,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -252,7 +256,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 83;
+  htim3.Init.Prescaler = 15;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 39999;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

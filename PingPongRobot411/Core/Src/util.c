@@ -4,14 +4,14 @@ int i2c_read(uint8_t dev_addr, uint8_t mem_addr, uint8_t* buf, uint16_t size) {
 	HAL_StatusTypeDef status;
 	status = HAL_I2C_Mem_Read(&hi2c3, dev_addr << 1, mem_addr, 1, buf, size, 100);
 
-	return status == HAL_OK;
+	return status != HAL_OK;
 }
 
 int i2c_write(uint8_t dev_addr, uint8_t mem_addr, uint8_t* buf, uint16_t size) {
 	HAL_StatusTypeDef status;
 	status = HAL_I2C_Mem_Write(&hi2c3, dev_addr << 1, mem_addr, 1, buf, size, 100);
 
-	return status == HAL_OK;
+	return status != HAL_OK;
 }
 
 int i2c_mask_write(uint8_t dev_addr, uint8_t mem_addr, int num_bits, int shift, uint8_t data) {
