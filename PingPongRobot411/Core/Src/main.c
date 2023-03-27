@@ -26,6 +26,7 @@
 #include "odometry.h"
 #include "hbridge.h"
 #include "n64.h"
+#include "serialDisplay.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -126,6 +127,12 @@ int main(void)
 
   init_imu();
 
+  display_freeplay();
+
+  HAL_Delay(500);
+
+  display_playback_record();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -134,27 +141,10 @@ int main(void)
   {
     /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
-	  n64_read(N64_POLL, &n64_status);
-	  HAL_Delay(50);
+	  // n64_read(N64_POLL, &n64_status);
+	  //HAL_Delay(50);
+	  //display_freeplay();
 
-
-//	  // hbridge_t hbridgelol = hbridges[0];
-//	HAL_Delay(50);
-//	set_PWM(hbridges[0], 0.5);
-//	HAL_Delay(50);
-//	set_PWM(hbridges[1], 0.5);
-//	HAL_Delay(50);
-//	set_PWM(hbridges[2], 0.5);
-//	HAL_Delay(50);
-//	set_PWM(hbridges[3], 0.5);
-//	HAL_Delay(50);
-//		set_PWM(hbridges[0], 0.25);
-//		HAL_Delay(50);
-//		set_PWM(hbridges[1], 0.25);
-//		HAL_Delay(50);
-//		set_PWM(hbridges[2], 0.25);
-//		HAL_Delay(50);
-//		set_PWM(hbridges[3], 0.25);
 
 	  // update_odom(&odometry);
   }
