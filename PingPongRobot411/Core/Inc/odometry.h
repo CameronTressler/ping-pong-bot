@@ -12,41 +12,45 @@
 // Register address for setting operation mode.
 #define OPR_MODE_REG 0x3D
 
-// Register address for Remapping axis names.
-#define AXIS_MAP_CONFIG_REG 0x41
-
 // Register address for setting units of measurements.
 #define UNIT_SEL_REG 0x3B
-// Uses degrees.
-#define UNIT_SEL_DEG 0b0 // 0bxxxxx0xx
+
+// Register for reading calibration status
+#define CALIB_STAT_REG 0x35
 
 void init_imu();
+uint8_t get_imu_calib();
+int is_calibrated(uint8_t data);
 
 // Output rate for fusion data is 100Hz.
+#define IMU_UPDATE_RT 100.0
 
-#define EUL_DATA 0x1A
+#define EUL_DATA_Z 0x1E
 
-#define LIA_DATA 0x28
+#define LIA_DATA_X 0x28
 
 typedef union {
 	struct {
-		uint8_t x_lsb;
-		uint8_t x_msb;
-		uint8_t y_lsb;
-		uint8_t y_msb;
-		uint8_t z_lsb;
-		uint8_t z_msb;
+		uint8_t lsb;
+		uint8_t msb;
 	} bytes;
 
-	uint8_t buf[6];
+	struct {
+		int16_t datum;
+	} data;
+
+	uint8_t buf[2];
 } imu_raw_data_t;
 
 typedef struct {
 	double x_rel;
 	double y_rel;
-	double yaw;
+
+	double velocity;
+	double heading;
 } odom_t;
 
+void init_odom(odom_t* odom);
 void update_odom(odom_t* odom);
 
 extern odom_t odometry;
