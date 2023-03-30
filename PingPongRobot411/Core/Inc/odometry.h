@@ -25,7 +25,7 @@ int is_calibrated(uint8_t data);
 // Output rate for fusion data is 100Hz.
 #define IMU_UPDATE_RT 100.0
 
-#define EUL_DATA_Z 0x1E
+#define EUL_DATA_X 0x1A
 
 #define LIA_DATA_X 0x28
 

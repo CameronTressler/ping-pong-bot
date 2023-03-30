@@ -3,14 +3,19 @@
 #include <math.h>
 
 void init_imu() {
+	// Set to config operational mode.
+	i2c_mask_write(IMU_ADDR, OPR_MODE_REG, 4, 0, 0b0000);
+	HAL_Delay(20);
+
 	// Set to normal power mode.
 	i2c_mask_write(IMU_ADDR, PWR_MODE_REG, 2, 0, 0b00);
 
-	// Set to NDOF operational mode.
-	i2c_mask_write(IMU_ADDR, OPR_MODE_REG, 4, 0, 0b1100);
-
 	// Set to use radians and mg.
 	i2c_mask_write(IMU_ADDR, UNIT_SEL_REG, 3, 0, 0b111);
+
+	// Set to NDOF operational mode.
+	i2c_mask_write(IMU_ADDR, OPR_MODE_REG, 4, 0, 0b1100);
+	HAL_Delay(20);
 }
 
 uint8_t get_imu_calib() {
@@ -36,7 +41,7 @@ void update_odom(odom_t* odom) {
 
 	imu_raw_data_t yaw, lin_accel;
 
-	i2c_read(IMU_ADDR, EUL_DATA_Z, yaw.buf, 2);
+	i2c_read(IMU_ADDR, EUL_DATA_X, yaw.buf, 2);
 	i2c_read(IMU_ADDR, LIA_DATA_X, lin_accel.buf, 2);
 
 	// Update heading in degrees.
