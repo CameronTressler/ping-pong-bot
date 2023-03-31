@@ -1,6 +1,8 @@
 #include "odometry.h"
-#include "util.h"
+
 #include <math.h>
+#include "stdio.h"
+#include "util.h"
 
 void init_imu() {
 	// Set to config operational mode.
@@ -26,7 +28,7 @@ uint8_t get_imu_calib() {
 }
 
 int is_calibrated(uint8_t data) {
-	return data == 255;
+	return (data & 0b00111111) >= 63;
 }
 
 void init_odom(odom_t* odom) {
@@ -38,27 +40,47 @@ void init_odom(odom_t* odom) {
 
 void update_odom(odom_t* odom) {
 	uint8_t calibration = get_imu_calib();
+	if (!is_calibrated(calibration)) {
+		printf("Not calibrated :(\n\r");
+		return;
+	}
 
 	imu_raw_data_t yaw, lin_accel;
 
+	// Update heading in radians.
 	i2c_read(IMU_ADDR, EUL_DATA_X, yaw.buf, 2);
+	odom->heading = yaw.data.datum / 900.0;
+
 	i2c_read(IMU_ADDR, LIA_DATA_X, lin_accel.buf, 2);
 
-	// Update heading in degrees.
-	odom->heading = yaw.data.datum / 900.0;
-//	odom->heading = (yaw.bytes.msb * 16.0) +
-//					(yaw.bytes.lsb / 16.0);
+	// Update acceleration in m/s^2. Filter out near-zero values.
+	double accel;
+	if (lin_accel.data.datum < ACCEL_ZERO_THRESHOLD) {
+		accel = 0.0;
 
-	// Update velocity in m/s.
-	double accel = lin_accel.data.datum / 9806.65;
-//	double accel = (lin_accel.bytes.y_msb * 0.284444) +
-//				   (lin_accel.bytes.y_lsb / 900.0);
-	odom->velocity += accel / IMU_UPDATE_RT;
+		if (odom->iterations_no_accel < VELOCITY_ZERO_THRESHOLD) {
+			++(odom->iterations_no_accel);
+		}
+	}
+	else {
+		accel = lin_accel.data.datum / 9806.65;
+		odom->iterations_no_accel = 0;
+	}
 
-	double delta_pos = odom->velocity / IMU_UPDATE_RT;
+	if (odom->iterations_no_accel < VELOCITY_ZERO_THRESHOLD) {
+		odom->velocity += accel / IMU_UPDATE_RT;
+		update_position(odom, odom->velocity / IMU_UPDATE_RT);
+	}
+	else {
+		odom->velocity = 0.0;
+	}
 
-	odom->x_rel += cos(odom->heading) * delta_pos;
-	odom->y_rel += sin(odom->heading) * delta_pos;
+	printf("Accel: %f\n\r", accel);
+}
+
+void update_position(odom_t* odom, double dist) {
+	odom->x_rel += cos(odom->heading) * dist;
+	odom->y_rel += sin(odom->heading) * dist;
 }
 
 odom_t odometry;
