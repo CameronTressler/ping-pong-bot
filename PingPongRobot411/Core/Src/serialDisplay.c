@@ -1,5 +1,6 @@
 #include "serialDisplay.h"
 #include <stdint.h>
+#include <string.h>
 #include "main.h"
 
 display_t display;
@@ -9,15 +10,43 @@ display_t display;
  *  - Finalize buttons for mn
  */
 
+
+// Display lookup table
+char display_table[21][40] = {"0                                ",
+		"1                                ",
+		"2                                ",
+		"3                                ",
+		"4                                ",
+		"5                                ",
+		"6                                ",
+		"7                                ",
+		"8                                ",
+		"9                                ",
+		"10                               ",
+		"11                               ",
+		"12                               ",
+		"13                               ",
+		"14                               ",
+		"15                               ",
+		"16                               ",
+		"17                               ",
+		"18                               ",
+		"19                               ",
+		"20                               ",
+
+};
+
 // Increases ball count by one and updates display
 void increment_ball_count() {
+
+	// Increment ball count
 	++display.ball_count;
-//
-//	char text[20];
-//	sprintf(text, "%d", display.ball_count);
-//	display_write_string("Balls : " + text);
-//	display.top_text = "Balls: " + text;
-//	display_write_string(display.bottom_text);
+
+	// Write to display
+	display.top_text = "";
+	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
 // Decreases ball count by one and updates display
@@ -25,54 +54,86 @@ void decrement_ball_count(){
 	--display.ball_count;
 
 	// Update display
-//	char text[20];
-//	sprintf(text, "%d", display.ball_count);
-//	display_write_string("Balls : " + text);
-//	display.top_text = "Balls: " + text;
-//	display_write_string(display.bottom_text);
+	display.top_text = "";
+	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
 
 // Resets value of ball count to BALL_COUNT defined in serialDisplay.h
 void display_reset_ball_count(){
-//	display.ball_count = BALL_COUNT;
-//
-//	// Update display
-//	char text[20];
-//	sprintf(text, "%d", display.ball_count);
-//	display_write_string("Balls : " + text);
-//	display.top_text = "Balls: " + text;
-//	display_write_string(display.bottom_text);
+	display.ball_count = BALL_COUNT;
+
+	// Update display
+	display.top_text = "";
+	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
 void display_freeplay() {
 	display.bottom_text = "Free-Play                               ";
-	display.top_text = "Launch: A                               "; // TODO: what button is this
+	display.top_text = "Launch: A                               ";
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }
 
 void display_playback_record() {
 	display.bottom_text = "RECORDING...                            ";
-	display.top_text = "RECORDING                               ";
+	display.top_text = "STOP: B                                 ";
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }
 
 void display_playback_relocate(){
-	display.bottom_text = "Play Back";
-	display.top_text = "Relocate";
+	display.bottom_text = "Relocate                                ";
+	display.top_text = "START                                   ";
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }
 
 void display_playback_begin(){
-	display.bottom_text = "Play Back";
-	display.top_text = "Press A"; // TODO: what button is this
+	display.bottom_text = "Play Back                               ";
+	display.top_text = "Press START                             ";
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }
 
+void display_intervals_begin() {
+	display.bottom_text = "Intervals                               ";
+	display.top_text = "Press START                             ";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_menu_1() {
+	display.bottom_text = "Free Play                               ";
+	display.top_text = "Press A                                 ";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_menu_2() {
+	display.bottom_text = "Play Back                               ";
+	display.top_text = "Press A                                 ";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_menu_3() {
+	display.bottom_text = "Intervals                               ";
+	display.top_text = "Press A                                 ";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_welcome() {
+	display.bottom_text = "WELCOME                                 ";
+	display.top_text = "Press START                             ";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
 
 void display_send_data(char data) {
 	char data_u, data_l;

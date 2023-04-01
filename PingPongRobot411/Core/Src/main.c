@@ -28,6 +28,7 @@
 #include "hbridge.h"
 #include "n64.h"
 #include "serialDisplay.h"
+#include "controller.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -152,15 +153,65 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  // State machine
+	  display_state curr_state = welcome;
+	  display_state prev_state = welcome;
+
+	  switch(prev_state) {
+		  case welcome: {
+			  display_welcome();
+			  if(n64_status.Start == 1){
+				  curr_state = menu_1;
+			  }
+		  }
+		  break;
+
+		  case menu_1: {
+
+		  }
+		  break;
+
+		  case menu_2: {
+
+		  }
+		  break;
+
+		  case menu_3: {
+
+		  }
+		  break;
+
+		  case launch: {
+
+		  }
+		  break;
+
+		  case pb_record: {
+
+		  }
+		  break;
+
+		  case pb_relocate: {
+
+		  }
+		  break;
+
+		  case pb_begin: {
+
+		  }
+		  break;
+
+		  case intervals: {
+
+		  }
+		  break;
+	  }
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  // n64_read(N64_POLL, &n64_status);
-	  //HAL_Delay(50);
-	  //display_freeplay();
 
-
-	  // update_odom(&odometry);
   }
   /* USER CODE END 3 */
 }
