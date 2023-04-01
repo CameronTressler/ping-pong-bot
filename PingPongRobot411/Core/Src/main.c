@@ -145,6 +145,10 @@ int main(void)
 
   // Start IMU timer
   HAL_TIM_Base_Start_IT(&htim10);
+
+  // State machine
+  display_state curr_state = welcome;
+  display_state prev_state = welcome;
 //  HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
@@ -154,9 +158,6 @@ int main(void)
   while (1)
   {
 	  // State machine
-	  display_state curr_state = welcome;
-	  display_state prev_state = welcome;
-
 	  switch(prev_state) {
 		  case welcome: {
 			  display_welcome();
@@ -167,44 +168,128 @@ int main(void)
 		  break;
 
 		  case menu_1: {
+			  display_menu_1();
 
+			  // Go to next menu
+			  if(n64_status.DD == 1) {
+				  curr_state = menu_2;
+			  }
+
+			  // Go to previous menu
+			  else if(n64_status.DU == 1) {
+				  curr_state = menu_3;
+			  }
+
+			  // Or go to launching
+			  else if(n64_status.A == 1) {
+				  curr_state = launch;
+			  }
 		  }
 		  break;
 
 		  case menu_2: {
+			  display_menu_2();
+
+			  // Go to next menu
+			  if(n64_status.DD == 1) {
+				  curr_state = menu_3;
+			  }
+
+			  // Go to previous menu
+			  else if(n64_status.DU == 1) {
+				  curr_state = menu_1;
+			  }
+
 
 		  }
 		  break;
 
 		  case menu_3: {
+			  display_menu_3();
+
+			  // Go to next menu
+			  if(n64_status.DD == 1) {
+				  curr_state = menu_1;
+			  }
+
+			  // Go to previous menu
+			  else if(n64_status.DU == 1) {
+				  curr_state = menu_2;
+			  }
+
+			  // Go to intervals
+			  else if(n64_status.A == 1) {
+				  curr_state = intervals;
+			  }
 
 		  }
 		  break;
 
 		  case launch: {
+			  display_freeplay();
 
+			  // Launch ball
+			  if(n64_status.A == 1) {
+				  controller_launch_ball();
+			  }
+
+			  // Drive robot
+			  if(/* something */) {
+				  controller_drive();
+			  }
+
+			  // Exit
+			  if(n64_status.B == 1) {
+				  curr_state = menu_1;
+			  }
 		  }
 		  break;
 
 		  case pb_record: {
+			  display_playback_record();
 
+			  // TODO: record sequence
+
+			  // Exit
+			  if(n64_status.B == 1) {
+				  curr_state = pb_relocate;
+			  }
 		  }
 		  break;
 
 		  case pb_relocate: {
+			  display_playback_relocate();
+
+			  // Start playback
+			  if (n64_status.Start == 1) {
+				  curr_state = pb_begin;
+			  }
 
 		  }
 		  break;
 
 		  case pb_begin: {
+			  display_begin_playback();
 
+			  // TODO: playback run and exit when complete
 		  }
 		  break;
 
 		  case intervals: {
+			  display_intervals_begin();
+
+			  // Begin
+			  if(n64_status.Start == 1) {
+				  // TODO: Start launch timer
+				  curr_state = launch;
+			  }
+
+			  // TODO: Maybe have functionality to adjust timing?
 
 		  }
 		  break;
+
+		  prev_state = curr_state;
 	  }
 
 

@@ -4,14 +4,8 @@
 #include <stdint.h>
 #include "main.h"
 
-/*
- * The screen:
- *
- * */
-
 typedef struct {
 	int ball_count;
-	int screen;
 	char *top_text; // must be 40 characters wide!!
 	char *bottom_text; // must be 40 characters wide!!
 
@@ -56,6 +50,8 @@ void display_freeplay();
 void display_welcome();
 
 void display_intervals_begin();
+
+void display_intervals_launch();
 
 void display_menu_1();
 

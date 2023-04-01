@@ -73,8 +73,10 @@ void display_reset_ball_count(){
 }
 
 void display_freeplay() {
-	display.bottom_text = "Free-Play                               ";
-	display.top_text = "Launch: A                               ";
+	display.top_text = "";
+	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display_write_string(display.top_text);
+	display.bottom_text = "Launch: A                               ";
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }
@@ -95,7 +97,7 @@ void display_playback_relocate(){
 
 void display_playback_begin(){
 	display.bottom_text = "Play Back                               ";
-	display.top_text = "Press START                             ";
+	display.top_text = "Get ready!                              ";
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }
