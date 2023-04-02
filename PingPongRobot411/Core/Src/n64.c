@@ -1,5 +1,6 @@
 #include "n64.h"
 #include <stdint.h>
+#include <stdbool.h>
 #include "cmsis_gcc.h"
 
 void n64_init(n64_t *n64_state) {
@@ -34,26 +35,34 @@ void n64_update(uint32_t poll_rx_msg, n64_t *n64_state) {
 	// scheme:
 	// http://www.qwertymodo.com/hardware-projects/n64/n64-controller
 
-	n64_state->A = (poll_rx_msg >> 31) & 1;
-	n64_state->B = (poll_rx_msg >> 30) & 1;
-	n64_state->Z = (poll_rx_msg >> 29) & 1;
-	n64_state->Start = (poll_rx_msg >> 28) & 1;
-	n64_state->DU = (poll_rx_msg >> 27) & 1;
-	n64_state->DD = (poll_rx_msg >> 26) & 1;
-	n64_state->DL = (poll_rx_msg >> 25) & 1;
-	n64_state->DR = (poll_rx_msg >> 24) & 1;
-	n64_state->Reset = (poll_rx_msg >> 23) & 1;
+	// not using a for loop because that cements the order of the
+	// enum. This is flexible.
+	n64_state->button_status[N64_A] = (poll_rx_msg >> 31) & 1;
+	n64_state->button_status[N64_B] = (poll_rx_msg >> 30) & 1;
+	n64_state->button_status[N64_Z] = (poll_rx_msg >> 29) & 1;
+	n64_state->button_status[N64_Start] = (poll_rx_msg >> 28) & 1;
+	n64_state->button_status[N64_DU] = (poll_rx_msg >> 27) & 1;
+	n64_state->button_status[N64_DD] = (poll_rx_msg >> 26) & 1;
+	n64_state->button_status[N64_DL] = (poll_rx_msg >> 25) & 1;
+	n64_state->button_status[N64_DR] = (poll_rx_msg >> 24) & 1;
+	n64_state->button_status[N64_Reset] = (poll_rx_msg >> 23) & 1;
 
 	// bit 22 is reserved (undefined)
 
-	n64_state->L = (poll_rx_msg >> 21) & 1;
-	n64_state->R = (poll_rx_msg >> 20) & 1;
-	n64_state->CU = (poll_rx_msg >> 19) & 1;
-	n64_state->CD = (poll_rx_msg >> 18) & 1;
-	n64_state->CL = (poll_rx_msg >> 17) & 1;
-	n64_state->CR = (poll_rx_msg >> 16) & 1;
+	n64_state->button_status[N64_L] = (poll_rx_msg >> 21) & 1;
+	n64_state->button_status[N64_R] = (poll_rx_msg >> 20) & 1;
+	n64_state->button_status[N64_CU] = (poll_rx_msg >> 19) & 1;
+	n64_state->button_status[N64_CD] = (poll_rx_msg >> 18) & 1;
+	n64_state->button_status[N64_CL] = (poll_rx_msg >> 17) & 1;
+	n64_state->button_status[N64_CR] = (poll_rx_msg >> 16) & 1;
 
-	// 8 bit values
-	n64_state->X = (poll_rx_msg >> 8) & 0xFF;
-	n64_state->X = poll_rx_msg & 0xFF;
+	// 8 bit joystick values
+	n64_state->button_status[N64_X] = (poll_rx_msg >> 8) & 0xFF;
+	n64_state->button_status[N64_Y] = poll_rx_msg & 0xFF;
 }
+
+bool n64_button_pressed(n64_t *prev, n64_t *curr, n64_button button) {
+	// true if button was previously unpressed (0) and is now pressed (1)
+	return !prev->button_status[button] && curr->button_status[button];
+}
+
