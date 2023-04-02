@@ -5,12 +5,6 @@
 
 display_t display;
 
-/*
- * General TODO;
- *  - Finalize buttons for mn
- */
-
-
 //  Ball count display lookup table
 char ball_display_table[21][33] = {"0                                ",
 		"1                                ",
