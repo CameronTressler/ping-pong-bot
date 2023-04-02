@@ -204,7 +204,7 @@ int main(void)
 
 			  // Go to start playback
 			  else if (n64_status.A == 1) {
-				  curr_state = countdown;
+				  curr_state = pb_countdown;
 			  }
 
 		  }
@@ -225,7 +225,7 @@ int main(void)
 
 			  // Go to intervals
 			  else if(n64_status.A == 1) {
-				  curr_state = intervals;
+				  curr_state = intervals_countdown;
 			  }
 
 		  }
@@ -294,7 +294,7 @@ int main(void)
 		  break;
 
 		  case pb_begin: {
-			  display_begin_playback();
+			  display_playback_begin();
 
 			  // TODO: playback run and exit when complete
 		  }
@@ -308,7 +308,7 @@ int main(void)
 			  // If done, exit
 			  if(display.countdown == 0) {
 
-				  curr_state = interval;
+				  curr_state = intervals;
 			  }
 
 			  // If not, decrement

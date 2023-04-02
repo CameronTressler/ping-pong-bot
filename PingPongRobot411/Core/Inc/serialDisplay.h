@@ -63,9 +63,9 @@ void display_menu_2();
 void display_menu_3();
 
 // Count down display
-void display_pb_coutndown();
+void display_pb_countdown();
 
-void display_interval_countdown();
+void display_intervals_countdown();
 
 // Initialization and commands
 void display_init();
