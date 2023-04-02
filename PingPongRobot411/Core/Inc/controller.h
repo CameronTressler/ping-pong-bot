@@ -21,6 +21,4 @@ void controller_launch_ball();
 
 void controller_drive(); // TODO: need clearer interface with n64
 
-void controller_reload_balls(); // TODO: not sure if this elsewhere
-
 #endif /* INC_CONTOLLER_H_ */
