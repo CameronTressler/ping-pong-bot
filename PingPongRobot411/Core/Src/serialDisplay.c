@@ -5,13 +5,7 @@
 
 display_t display;
 
-/*
- * General TODO;
- *  - Finalize buttons for mn
- */
-
-
-// Display lookup table
+//  Ball count display lookup table
 char ball_display_table[21][33] = {"0                                ",
 		"1                                ",
 		"2                                ",
@@ -35,6 +29,7 @@ char ball_display_table[21][33] = {"0                                ",
 		"20                               "
 };
 
+// Countdown display table
 char countdown_display_table[4][27] = {
 	"0                          ",
 	"1                          ",
@@ -46,7 +41,8 @@ char countdown_display_table[4][27] = {
 void increment_ball_count() {
 
 	// Increment ball count
-	++display.ball_count;
+	if(display.ball_count != 20)
+		++display.ball_count;
 
 	// Write to display
 	display.top_text = "";
@@ -57,7 +53,8 @@ void increment_ball_count() {
 
 // Decreases ball count by one and updates display
 void decrement_ball_count(){
-	--display.ball_count;
+	if(display.ball_count != 0)
+		--display.ball_count;
 
 	// Update display
 	display.top_text = "";

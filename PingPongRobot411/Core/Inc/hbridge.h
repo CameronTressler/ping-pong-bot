@@ -24,7 +24,8 @@ typedef struct {
 	float PWM;
 	uint32_t * CCR;
 	GPIO_TypeDef * GPIOx;
-	uint16_t GPIO_Pin;
+	uint16_t ndir;
+	uint16_t dir;
 	int PinState;
 } hbridge_t;
 

@@ -29,6 +29,7 @@
 #include "n64.h"
 #include "serialDisplay.h"
 #include "controller.h"
+#include "solenoid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +52,7 @@ I2C_HandleTypeDef hi2c3;
 
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
+TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim10;
 
 UART_HandleTypeDef huart2;
@@ -67,6 +69,7 @@ static void MX_TIM3_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_TIM10_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -76,6 +79,7 @@ static void MX_USART2_UART_Init(void);
 
 extern hbridge_t hbridges[4];
 extern display_t display;
+extern solenoid_t solenoid;
 
 /* USER CODE END 0 */
 
@@ -117,6 +121,7 @@ int main(void)
   MX_I2C3_Init();
   MX_TIM10_Init();
   MX_USART2_UART_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
   // Start Ultrasonic timer
@@ -134,12 +139,6 @@ int main(void)
 
   n64_init(&n64_status);
 
-  display_freeplay();
-
-  HAL_Delay(500);
-
-  display_playback_record();
-
   init_odom(&odometry);
   init_imu();
 
@@ -149,8 +148,9 @@ int main(void)
   // State machine
   display_state curr_state = welcome;
   display_state prev_state = welcome;
-//  HAL_TIM_PWM_Start(&htim10, TIM_CHANNEL_1);
 
+  // Is htim5 init?
+  bool htim5_int = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -259,7 +259,7 @@ int main(void)
 
 			  // If done, exit
 			  if(display.countdown == 0) {
-
+				  display.countdown = 3;
 				  curr_state = pb_record;
 			  }
 
@@ -307,7 +307,7 @@ int main(void)
 
 			  // If done, exit
 			  if(display.countdown == 0) {
-
+				  display.countdown = 3;
 				  curr_state = intervals;
 			  }
 
@@ -321,13 +321,25 @@ int main(void)
 		  case intervals: {
 			  display_intervals_begin();
 
-			  // TODO: Launch at constant interval
+			  // Launch at constant interval only if interrupt hasn't been started
+			  if(!htim5_int){
+				  htim5_int = 1;
+
+				  // Start interrupt
+				  if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK ) {
+					  Error_Handler();
+				  }
+			  }
 
 			  // TODO: Maybe have functionality to adjust timing?
 
-			  // Exit
+			  // Exit and cancel interrupt
 			  if(n64_status.B == 1) {
 				  curr_state = menu_3;
+				  htim5_int = 0;
+				  if(HAL_TIM_Base_Stop_IT(&htim5) != HAL_OK) {
+					  Error_Handler();
+				  }
 			  }
 		  }
 		  break;
@@ -540,6 +552,51 @@ static void MX_TIM4_Init(void)
 }
 
 /**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 1599;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 50000;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim5, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+
+  /* USER CODE END TIM5_Init 2 */
+
+}
+
+/**
   * @brief TIM10 Initialization Function
   * @param None
   * @retval None
@@ -635,10 +692,12 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|LD2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
+                          |GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
@@ -655,8 +714,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 LD2_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|LD2_Pin;
+  /*Configure GPIO pins : PA0 LD2_Pin PA10 PA11
+                           PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
+                          |GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -674,8 +735,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC10 PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : PC6 PC7 PC8 PC10
+                           PC11 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10
+                          |GPIO_PIN_11|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
