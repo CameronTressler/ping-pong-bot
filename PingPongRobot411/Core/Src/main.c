@@ -29,6 +29,7 @@
 #include "n64.h"
 #include "serialDisplay.h"
 #include "controller.h"
+#include "solenoid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -76,6 +77,7 @@ static void MX_USART2_UART_Init(void);
 
 extern hbridge_t hbridges[4];
 extern display_t display;
+extern solenoid_t solenoid;
 
 /* USER CODE END 0 */
 
@@ -133,12 +135,6 @@ int main(void)
   display_init();
 
   n64_init(&n64_status);
-
-  display_freeplay();
-
-  HAL_Delay(500);
-
-  display_playback_record();
 
   init_odom(&odometry);
   init_imu();

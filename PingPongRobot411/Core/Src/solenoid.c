@@ -1,5 +1,6 @@
 #include "main.h"
 #include "solenoid.h"
+#include <stdint.h>
 
 solenoid_t solenoid;
 

@@ -41,7 +41,8 @@ char countdown_display_table[4][27] = {
 void increment_ball_count() {
 
 	// Increment ball count
-	++display.ball_count;
+	if(display.ball_count != 20)
+		++display.ball_count;
 
 	// Write to display
 	display.top_text = "";
@@ -52,7 +53,8 @@ void increment_ball_count() {
 
 // Decreases ball count by one and updates display
 void decrement_ball_count(){
-	--display.ball_count;
+	if(display.ball_count != 0)
+		--display.ball_count;
 
 	// Update display
 	display.top_text = "";

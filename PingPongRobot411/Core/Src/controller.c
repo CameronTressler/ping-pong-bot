@@ -1,4 +1,5 @@
 #include "n64.h"
+#include "controller.h"
 #include "drive.h"
 #include "hbridge.h"
 #include "serialDisplay.h"
@@ -15,8 +16,8 @@ void controller_launch_ball() {
 	decrement_ball_count();
 
 	// Start launcher
-	set_PWM(hbridge[0], LAUNCH_PWM);
-	set_PWM(hbridge[1], -LAUNCH_PWM);
+	set_PWM(hbridges[0], LAUNCH_PWM);
+	set_PWM(hbridges[1], -LAUNCH_PWM);
 
 	// Maybe delay slightly to get up to speed?
 	HAL_Delay(LAUNCH_DELAY);
@@ -25,8 +26,8 @@ void controller_launch_ball() {
 	solenoid_actuate();
 
 	// Turn off hbridges
-	set_PWM(hbridge[0], 0);
-	set_PWM(hbridge[1], 0);
+	set_PWM(hbridges[0], 0);
+	set_PWM(hbridges[1], 0);
 }
 
 
