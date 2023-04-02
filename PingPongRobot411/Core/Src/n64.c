@@ -7,6 +7,13 @@ void n64_init(n64_t *n64_state) {
 	n64_update(0, n64_state);
 }
 
+void n64_copy(n64_t *dst, n64_t *src) {
+	for (int i = 0; i < N64_NUM_VALUES; ++i) {
+		dst->button_status[i] = src->button_status[i];
+	}
+}
+
+
 void n64_read(uint32_t tx_msg, n64_t *n64_state) {
 
 	// get interrupt enable status (0: enabled)

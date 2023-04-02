@@ -38,6 +38,7 @@ typedef struct {
 } n64_t;
 
 void n64_init(n64_t *n64_state);
+void n64_copy(n64_t *dst, n64_t *src);
 
 // n64 controller read button status
 void n64_read(uint32_t tx_msg, n64_t *n64_state);	// wrapper
