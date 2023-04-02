@@ -161,6 +161,8 @@ int main(void)
 	  switch(prev_state) {
 		  case welcome: {
 			  display_welcome();
+
+			  // Go to menu
 			  if(n64_status.Start == 1){
 				  curr_state = menu_1;
 			  }
@@ -200,6 +202,10 @@ int main(void)
 				  curr_state = menu_1;
 			  }
 
+			  // Go to start playback
+			  else if (n64_status.A == 1) {
+				  curr_state = countdown;
+			  }
 
 		  }
 		  break;
@@ -245,6 +251,25 @@ int main(void)
 		  }
 		  break;
 
+		  case pb_countdown: {
+			  display_pb_countdown();
+
+			  // Delay
+			  HAL_Delay(500);
+
+			  // If done, exit
+			  if(display.countdown == 0) {
+
+				  curr_state = pb_record;
+			  }
+
+			  // If not, decrement
+			  else {
+				  --display.countdown;
+			  }
+		  }
+		  break;
+
 		  case pb_record: {
 			  display_playback_record();
 
@@ -274,18 +299,36 @@ int main(void)
 			  // TODO: playback run and exit when complete
 		  }
 		  break;
+		  case intervals_countdown: {
+			  display_intervals_countdown();
+
+			  // Delay
+			  HAL_Delay(500);
+
+			  // If done, exit
+			  if(display.countdown == 0) {
+
+				  curr_state = interval;
+			  }
+
+			  // If not, decrement
+			  else {
+				  --display.countdown;
+			  }
+		  }
+		  break;
 
 		  case intervals: {
 			  display_intervals_begin();
 
-			  // Begin
-			  if(n64_status.Start == 1) {
-				  // TODO: Start launch timer
-				  curr_state = launch;
-			  }
+			  // TODO: Launch at constant interval
 
 			  // TODO: Maybe have functionality to adjust timing?
 
+			  // Exit
+			  if(n64_status.B == 1) {
+				  curr_state = menu_3;
+			  }
 		  }
 		  break;
 

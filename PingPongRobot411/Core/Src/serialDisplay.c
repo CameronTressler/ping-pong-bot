@@ -12,7 +12,7 @@ display_t display;
 
 
 // Display lookup table
-char display_table[21][40] = {"0                                ",
+char ball_display_table[21][33] = {"0                                ",
 		"1                                ",
 		"2                                ",
 		"3                                ",
@@ -32,8 +32,14 @@ char display_table[21][40] = {"0                                ",
 		"17                               ",
 		"18                               ",
 		"19                               ",
-		"20                               ",
+		"20                               "
+};
 
+char countdown_display_table[4][27] = {
+	"0                          ",
+	"1                          ",
+	"2                          ",
+	"3                          "
 };
 
 // Increases ball count by one and updates display
@@ -44,7 +50,7 @@ void increment_ball_count() {
 
 	// Write to display
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
@@ -55,7 +61,7 @@ void decrement_ball_count(){
 
 	// Update display
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
@@ -67,18 +73,17 @@ void display_reset_ball_count(){
 
 	// Update display
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
 
 void display_freeplay() {
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", display_table[display.ball_count]);
+	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display.bottom_text = "Launch: A                               ";
 	display_write_string(display.bottom_text);
-	display_write_string(display.top_text);
 }
 
 void display_playback_record() {
@@ -133,6 +138,22 @@ void display_menu_3() {
 void display_welcome() {
 	display.bottom_text = "WELCOME                                 ";
 	display.top_text = "Press START                             ";
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_pb_countdown() {
+	display.top_text = "Play Back                               ";
+	display.bottom_text = "";
+	display.bottom_text = strcat("Starting in: ", countdown_display_table[display.countdown]);
+	display_write_string(display.bottom_text);
+	display_write_string(display.top_text);
+}
+
+void display_intervals_countdown() {
+	display.top_text = "Intervals                               ";
+	display.bottom_text = "";
+	display.bottom_text = strcat("Starting in: ", countdown_display_table[display.countdown]);
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }

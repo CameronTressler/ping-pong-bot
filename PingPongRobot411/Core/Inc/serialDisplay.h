@@ -6,6 +6,7 @@
 
 typedef struct {
 	int ball_count;
+	int countdown;
 	char *top_text; // must be 40 characters wide!!
 	char *bottom_text; // must be 40 characters wide!!
 
@@ -18,10 +19,12 @@ typedef enum
     menu_2,
     menu_3,
     launch,
+	pb_countdown,
 	pb_record,
 	pb_relocate,
 	pb_begin,
-	intervals
+	intervals,
+	intervals_countdown
 
 } display_state;
 
@@ -58,6 +61,11 @@ void display_menu_1();
 void display_menu_2();
 
 void display_menu_3();
+
+// Count down display
+void display_pb_coutndown();
+
+void display_interval_countdown();
 
 // Initialization and commands
 void display_init();
