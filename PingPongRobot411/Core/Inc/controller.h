@@ -1,10 +1,6 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#include "n64.h"
-#include "drive.h"
-#include "serialDisplay.h"
-
 /*
  * arrows for menu
  * A for some select and launch

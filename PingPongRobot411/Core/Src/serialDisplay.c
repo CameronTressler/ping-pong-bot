@@ -11,7 +11,7 @@ display_t display;
  */
 
 
-// Display lookup table
+//  Ball count display lookup table
 char ball_display_table[21][33] = {"0                                ",
 		"1                                ",
 		"2                                ",
@@ -35,6 +35,7 @@ char ball_display_table[21][33] = {"0                                ",
 		"20                               "
 };
 
+// Countdown display table
 char countdown_display_table[4][27] = {
 	"0                          ",
 	"1                          ",

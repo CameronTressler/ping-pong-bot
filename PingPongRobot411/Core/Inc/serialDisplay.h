@@ -63,7 +63,7 @@ void display_menu_2();
 void display_menu_3();
 
 // Count down display
-void display_pb_countdown();
+void display_pb_coudown();
 
 void display_intervals_countdown();
 
