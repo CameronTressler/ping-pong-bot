@@ -339,7 +339,7 @@ int main(void)
 			  if(!htim5_int){
 				  htim5_int = 1;
 
-				  // Start interrupt
+				  // Start interrupt with default of 2 seconds
 				  if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK ) {
 					  Error_Handler();
 				  }
