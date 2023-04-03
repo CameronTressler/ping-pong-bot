@@ -6,7 +6,8 @@
 display_t display;
 
 //  Ball count display lookup table
-char ball_display_table[21][33] = {"0                                ",
+char ball_display_table[21][34] = {
+		"0                                ",
 		"1                                ",
 		"2                                ",
 		"3                                ",
@@ -30,7 +31,7 @@ char ball_display_table[21][33] = {"0                                ",
 };
 
 // Countdown display table
-char countdown_display_table[4][27] = {
+char countdown_display_table[4][28] = {
 	"0                          ",
 	"1                          ",
 	"2                          ",
@@ -38,7 +39,7 @@ char countdown_display_table[4][27] = {
 };
 
 // Increases ball count by one and updates display
-void increment_ball_count() {
+void increment_ball_count(void) {
 
 	// Increment ball count
 	if(display.ball_count != 20)
@@ -46,113 +47,142 @@ void increment_ball_count() {
 
 	// Write to display
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
+	char top_str[50];
+	strcpy(top_str, "Balls: ");
+
+	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
+
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
 
 // Decreases ball count by one and updates display
-void decrement_ball_count(){
+void decrement_ball_count(void) {
 	if(display.ball_count != 0)
 		--display.ball_count;
 
 	// Update display
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
+
+	char top_str[50];
+	strcpy(top_str, "Balls: ");
+
+	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
 
 
 // Resets value of ball count to BALL_COUNT defined in serialDisplay.h
-void display_reset_ball_count(){
+void display_reset_ball_count(void) {
 	display.ball_count = BALL_COUNT;
 
 	// Update display
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
+
+	char top_str[50];
+	strcpy(top_str, "Balls: ");
+
+	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
 
-void display_freeplay() {
+void display_freeplay(void) {
 	display.top_text = "";
-	display.top_text = strcat("Balls: ", ball_display_table[display.ball_count]);
+
+	char top_str[50];
+	strcpy(top_str, "Balls: ");
+
+	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display.bottom_text = "Launch: A                               ";
 	display_write_string(display.bottom_text);
 }
 
-void display_playback_record() {
+void display_playback_record(void) {
 	display.bottom_text = "RECORDING...                            ";
 	display.top_text = "STOP: B                                 ";
 	display_write_string(display.bottom_text);
 	display_write_string(display.top_text);
 }
 
-void display_playback_relocate(){
-	display.bottom_text = "Relocate                                ";
-	display.top_text = "START                                   ";
-	display_write_string(display.bottom_text);
+void display_playback_relocate(void) {
+	display.top_text = "Relocate                                ";
+	display.bottom_text = "START                                   ";
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
+
 }
 
-void display_playback_begin(){
-	display.bottom_text = "Play Back                               ";
-	display.top_text = "Get ready!                              ";
-	display_write_string(display.bottom_text);
+void display_playback_begin(void) {
+	display.top_text = "Play Back                               ";
+	display.bottom_text = "Get ready!                              ";
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
-void display_intervals_begin() {
-	display.bottom_text = "Intervals                               ";
-	display.top_text = "Press START                             ";
-	display_write_string(display.bottom_text);
+void display_intervals_begin(void) {
+	display.top_text = "Intervals                               ";
+	display.bottom_text = "STOP: B                                 ";
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
-void display_menu_1() {
-	display.bottom_text = "Free Play                               ";
-	display.top_text = "Press A                                 ";
-	display_write_string(display.bottom_text);
+void display_menu_1(void) {
+	display.top_text = "Free Play                               ";
+	display.bottom_text = "Press A                                 ";
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
-void display_menu_2() {
-	display.bottom_text = "Play Back                               ";
-	display.top_text = "Press A                                 ";
-	display_write_string(display.bottom_text);
+void display_menu_2(void) {
+	display.top_text = "Play Back                               ";
+	display.bottom_text = "Press A                                 ";
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
-void display_menu_3() {
-	display.bottom_text = "Intervals                               ";
-	display.top_text = "Press A                                 ";
-	display_write_string(display.bottom_text);
+void display_menu_3(void) {
+	display.top_text = "Intervals                               ";
+	display.bottom_text = "Press A                                 ";
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
+
 }
 
-void display_welcome() {
-	display.bottom_text = "WELCOME                                 ";
-	display.top_text = "Press START                             ";
-	display_write_string(display.bottom_text);
+void display_welcome(void) {
+	display.top_text = "WELCOME                                 ";
+	display.bottom_text = "Press START                             ";
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
+
 }
 
-void display_pb_countdown() {
+void display_pb_countdown(void) {
 	display.top_text = "Play Back                               ";
 	display.bottom_text = "";
-	display.bottom_text = strcat("Starting in: ", countdown_display_table[display.countdown]);
-	display_write_string(display.bottom_text);
+
+	char bottom_str[50];
+	strcpy(bottom_str, "Starting in: ");
+
+	display.bottom_text = strcat(bottom_str, countdown_display_table[display.countdown]);
+
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
-void display_intervals_countdown() {
+void display_intervals_countdown(void) {
 	display.top_text = "Intervals                               ";
 	display.bottom_text = "";
-	display.bottom_text = strcat("Starting in: ", countdown_display_table[display.countdown]);
-	display_write_string(display.bottom_text);
+
+	char bottom_str[50];
+	strcpy(bottom_str, "Starting in: ");
+
+	display.bottom_text = strcat(bottom_str, countdown_display_table[display.countdown]);
+
 	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
 void display_send_data(char data) {
@@ -169,6 +199,8 @@ void display_send_data(char data) {
 
 void display_init (void)
 {
+	display.countdown = 3;
+
 	// 4 bit initialisation
 	HAL_Delay(50);  // wait for >40ms
 	display_send_cmd(0x30);

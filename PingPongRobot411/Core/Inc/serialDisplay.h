@@ -35,40 +35,40 @@ extern display_t display;
 #define DISPLAY_ADDR 0x4E
 
 // Ball count
-void increment_ball_count();
+void increment_ball_count(void);
 
-void decrement_ball_count();
+void decrement_ball_count(void);
 
-void display_reset_ball_count();
+void display_reset_ball_count(void);
 
 // Menu architecture
-void display_playback_record();
+void display_playback_record(void);
 
-void display_playback_relocate();
+void display_playback_relocate(void);
 
-void display_playback_begin();
+void display_playback_begin(void);
 
-void display_freeplay();
+void display_freeplay(void);
 
-void display_welcome();
+void display_welcome(void);
 
-void display_intervals_begin();
+void display_intervals_begin(void);
 
-void display_intervals_launch();
+void display_intervals_launch(void);
 
-void display_menu_1();
+void display_menu_1(void);
 
-void display_menu_2();
+void display_menu_2(void);
 
-void display_menu_3();
+void display_menu_3(void);
 
 // Count down display
-void display_pb_countdown();
+void display_pb_countdown(void);
 
-void display_intervals_countdown();
+void display_intervals_countdown(void);
 
 // Initialization and commands
-void display_init();
+void display_init(void);
 
 void display_write_string(char *str);
 
