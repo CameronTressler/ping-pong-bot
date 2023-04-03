@@ -90,7 +90,8 @@ extern solenoid_t solenoid;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	n64_t n64_status;
+	n64_t n64_status_prev;
+	n64_t n64_status_curr;
 
   /* USER CODE END 1 */
 
@@ -137,13 +138,14 @@ int main(void)
 
   display_init();
 
-  n64_init(&n64_status);
+  n64_init(&n64_status_prev);
+  n64_init(&n64_status_curr);
 
   init_odom(&odometry);
   init_imu();
 
   // Start IMU timer
-  HAL_TIM_Base_Start_IT(&htim10);
+  //HAL_TIM_Base_Start_IT(&htim10); // TODO: This stalls.
 
   // State machine
   display_state curr_state = welcome;
@@ -157,99 +159,105 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  // get input from controller
+	  n64_read(N64_POLL, &n64_status_curr);
+
 	  // State machine
 	  switch(prev_state) {
 		  case welcome: {
 			  display_welcome();
 
 			  // Go to menu
-			  if(n64_status.Start == 1){
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_Start)){
 				  curr_state = menu_1;
 			  }
+
+			  break;
 		  }
-		  break;
 
 		  case menu_1: {
 			  display_menu_1();
 
 			  // Go to next menu
-			  if(n64_status.DD == 1) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
 				  curr_state = menu_2;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_status.DU == 1) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
 				  curr_state = menu_3;
 			  }
 
 			  // Or go to launching
-			  else if(n64_status.A == 1) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  curr_state = launch;
 			  }
+
+			  break;
 		  }
-		  break;
 
 		  case menu_2: {
 			  display_menu_2();
 
 			  // Go to next menu
-			  if(n64_status.DD == 1) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
 				  curr_state = menu_3;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_status.DU == 1) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
 				  curr_state = menu_1;
 			  }
 
 			  // Go to start playback
-			  else if (n64_status.A == 1) {
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  curr_state = pb_countdown;
 			  }
 
+			  break;
 		  }
-		  break;
 
 		  case menu_3: {
 			  display_menu_3();
 
 			  // Go to next menu
-			  if(n64_status.DD == 1) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
 				  curr_state = menu_1;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_status.DU == 1) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
 				  curr_state = menu_2;
 			  }
 
 			  // Go to intervals
-			  else if(n64_status.A == 1) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  curr_state = intervals_countdown;
 			  }
 
+			  break;
 		  }
-		  break;
 
 		  case launch: {
 			  display_freeplay();
 
 			  // Launch ball
-			  if(n64_status.A == 1) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  controller_launch_ball();
 			  }
 
 			  // Drive robot
-			  if(/* something */) {
+			  if(/* something */false) { // TODO: this is false to compile
 				  controller_drive();
 			  }
 
 			  // Exit
-			  if(n64_status.B == 1) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_1;
 			  }
+
+			  break;
 		  }
-		  break;
 
 		  case pb_countdown: {
 			  display_pb_countdown();
@@ -267,8 +275,9 @@ int main(void)
 			  else {
 				  --display.countdown;
 			  }
+
+			  break;
 		  }
-		  break;
 
 		  case pb_record: {
 			  display_playback_record();
@@ -276,29 +285,31 @@ int main(void)
 			  // TODO: record sequence
 
 			  // Exit
-			  if(n64_status.B == 1) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = pb_relocate;
 			  }
+
+			  break;
 		  }
-		  break;
 
 		  case pb_relocate: {
 			  display_playback_relocate();
 
 			  // Start playback
-			  if (n64_status.Start == 1) {
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_Start)) {
 				  curr_state = pb_begin;
 			  }
-
+			  break;
 		  }
-		  break;
 
 		  case pb_begin: {
 			  display_playback_begin();
 
 			  // TODO: playback run and exit when complete
+
+			  break;
 		  }
-		  break;
+
 		  case intervals_countdown: {
 			  display_intervals_countdown();
 
@@ -315,13 +326,16 @@ int main(void)
 			  else {
 				  --display.countdown;
 			  }
+
+			  break;
 		  }
-		  break;
+
 
 		  case intervals: {
 			  display_intervals_begin();
 
 			  // Launch at constant interval only if interrupt hasn't been started
+			  // TODO there is something very buggy happening here.
 			  if(!htim5_int){
 				  htim5_int = 1;
 
@@ -334,18 +348,22 @@ int main(void)
 			  // TODO: Maybe have functionality to adjust timing?
 
 			  // Exit and cancel interrupt
-			  if(n64_status.B == 1) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
 				  htim5_int = 0;
 				  if(HAL_TIM_Base_Stop_IT(&htim5) != HAL_OK) {
 					  Error_Handler();
 				  }
 			  }
-		  }
-		  break;
 
-		  prev_state = curr_state;
+			  break;
+		  }
+
 	  }
+
+	  prev_state = curr_state;
+	  n64_copy(&n64_status_prev, &n64_status_curr); // update n64 state
+	  HAL_Delay(50); // without some delay the n64 inputs are finnicky
 
 
     /* USER CODE END WHILE */
