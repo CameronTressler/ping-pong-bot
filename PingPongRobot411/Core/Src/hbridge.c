@@ -15,7 +15,7 @@ hbridge_t hbridges[4];
 void init_hbridges() {
 	hbridges[0].CCR = (uint32_t*)(TIM4_OFFSET + TIM_CCR1_OFFSET);
 	hbridges[0].GPIOx = GPIOA;
-	hbridges[0].dir = 12;
+	hbridges[0].dir = GPIO_PIN_12;
 	hbridges[0].ndir = 11;
 	hbridges[0].PinState = 0;
 	hbridges[0].PWM = 0;

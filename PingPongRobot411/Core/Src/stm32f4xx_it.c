@@ -275,10 +275,11 @@ void TIM1_UP_TIM10_IRQHandler(void)
 void TIM5_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM5_IRQn 0 */
-	controller_launch_ball();
+
   /* USER CODE END TIM5_IRQn 0 */
   HAL_TIM_IRQHandler(&htim5);
   /* USER CODE BEGIN TIM5_IRQn 1 */
+  controller_launch_ball();
 
   /* USER CODE END TIM5_IRQn 1 */
 }
