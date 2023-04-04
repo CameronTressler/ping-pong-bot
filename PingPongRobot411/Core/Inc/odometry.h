@@ -29,11 +29,11 @@ int is_calibrated(uint8_t data);
 #define LIA_DATA_X 0x28
 
 // The upper limit for an acceleration to be converted to zero, in mg.
-#define ACCEL_ZERO_THRESHOLD 5
+#define ACCEL_ZERO_THRESHOLD 10
 
 // The upper limit for the number iterations acceleration is zero before
 // velocity is also converted to zero.
-#define VELOCITY_ZERO_THRESHOLD 50
+#define VELOCITY_ZERO_THRESHOLD 3
 
 typedef union {
 	struct {
@@ -56,6 +56,8 @@ typedef struct {
 	double heading;
 
 	uint8_t iterations_no_accel;
+
+	uint32_t i;
 } odom_t;
 
 void init_odom(odom_t* odom);

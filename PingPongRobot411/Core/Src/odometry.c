@@ -1,6 +1,7 @@
 #include "odometry.h"
 
 #include <math.h>
+#include <stdlib.h>
 #include "stdio.h"
 #include "util.h"
 
@@ -28,7 +29,7 @@ uint8_t get_imu_calib() {
 }
 
 int is_calibrated(uint8_t data) {
-	return (data & 0b00111111) >= 63;
+	return (data & 0b00111111) >= 60;
 }
 
 void init_odom(odom_t* odom) {
@@ -55,7 +56,7 @@ void update_odom(odom_t* odom) {
 
 	// Update acceleration in m/s^2. Filter out near-zero values.
 	double accel;
-	if (lin_accel.data.datum < ACCEL_ZERO_THRESHOLD) {
+	if (abs(lin_accel.data.datum) < ACCEL_ZERO_THRESHOLD) {
 		accel = 0.0;
 
 		if (odom->iterations_no_accel < VELOCITY_ZERO_THRESHOLD) {
@@ -63,7 +64,8 @@ void update_odom(odom_t* odom) {
 		}
 	}
 	else {
-		accel = lin_accel.data.datum / 9806.65;
+		// Convert mg to m/s^2.
+		accel = lin_accel.data.datum / 101.971621;
 		odom->iterations_no_accel = 0;
 	}
 
@@ -75,7 +77,10 @@ void update_odom(odom_t* odom) {
 		odom->velocity = 0.0;
 	}
 
-	printf("Accel: %f\n\r", accel);
+	++(odom->i);
+	if (odom->i % 10 == 0) {
+		printf("%f : %f : %f : %f\n\r", accel, odom->heading, odom->x_rel, odom->y_rel);
+	}
 }
 
 void update_position(odom_t* odom, double dist) {
