@@ -16,8 +16,8 @@ void solenoid_init() {
 
 void solenoid_actuate() {
 	// Turn on, wait, and then turn off
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 1);
+	HAL_GPIO_WritePin(solenoid.GPIOx, solenoid.GPIO_Pin, 1);
 	HAL_Delay(SOL_DELAY);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 0);
+	HAL_GPIO_WritePin(solenoid.GPIOx, solenoid.GPIO_Pin, 0);
 
 }
