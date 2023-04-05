@@ -140,6 +140,7 @@ int main(void)
 
   n64_init(&n64_status_prev);
   n64_init(&n64_status_curr);
+  n64_read(N64_RESET, NULL);
 
   init_odom(&odometry);
   init_imu();
@@ -161,6 +162,14 @@ int main(void)
   {
 	  // get input from controller
 	  n64_read(N64_POLL, &n64_status_curr);
+
+	  // drive testing stuff
+//	  float x_stick = n64_scale_joystick(&n64_status_curr, N64_X);
+//	  float y_stick = n64_scale_joystick(&n64_status_curr, N64_Y);
+//	  printf("X: %.2f\t\tY: %.2f\n\r", x_stick, y_stick);
+//	  safe_drive(y_stick, -x_stick);
+//	  HAL_Delay(50);
+//	  continue;
 
 	  // State machine
 	  switch(prev_state) {
@@ -723,7 +732,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
+  HAL_GPIO_WritePin(GPIOA, N64_TX_Pin|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
                           |GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -745,20 +754,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 LD2_Pin PA10 PA11
+  /*Configure GPIO pins : N64_TX_Pin LD2_Pin PA10 PA11
                            PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
+  GPIO_InitStruct.Pin = N64_TX_Pin|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
                           |GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : N64_RX_Pin */
+  GPIO_InitStruct.Pin = N64_RX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(N64_RX_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA4 */
   GPIO_InitStruct.Pin = GPIO_PIN_4;

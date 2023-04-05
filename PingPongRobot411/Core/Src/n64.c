@@ -1,4 +1,5 @@
 #include "n64.h"
+#include "stm32f4xx_hal.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "cmsis_gcc.h"
@@ -71,5 +72,15 @@ void n64_update(uint32_t poll_rx_msg, n64_t *n64_state) {
 bool n64_button_pressed(n64_t *prev, n64_t *curr, n64_button button) {
 	// true if button was previously unpressed (0) and is now pressed (1)
 	return !prev->button_status[button] && curr->button_status[button];
+}
+
+float n64_scale_joystick(n64_t *state, n64_button button) {
+	// scale joystick values to [-1, 1] for drive
+
+	if (button != N64_X && button != N64_Y) {
+		HAL_Delay(HAL_MAX_DELAY);
+	} // TODO: remove check if latency issue
+
+	return (int8_t)state->button_status[button] / (float)N64_MAX_JOYSTICK;
 }
 
