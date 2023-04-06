@@ -23,7 +23,7 @@
 
 // other constants
 #define N64_NUM_VALUES 17
-#define N64_MAX_JOYSTICK 127
+#define N64_MAX_JOYSTICK 128
 
 // enum for n64 buttons -- used as index to button_status array
 typedef enum {

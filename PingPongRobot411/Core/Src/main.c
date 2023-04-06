@@ -30,6 +30,7 @@
 #include "serialDisplay.h"
 #include "controller.h"
 #include "solenoid.h"
+#include "drive.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -164,10 +165,29 @@ int main(void)
 	  n64_read(N64_POLL, &n64_status_curr);
 
 	  // drive testing stuff
-//	  float x_stick = n64_scale_joystick(&n64_status_curr, N64_X);
-//	  float y_stick = n64_scale_joystick(&n64_status_curr, N64_Y);
-//	  printf("X: %.2f\t\tY: %.2f\n\r", x_stick, y_stick);
-//	  safe_drive(y_stick, -x_stick);
+//	  float forward, left;
+//	  if (n64_status_curr.button_status[N64_DU] == n64_status_curr.button_status[N64_DD]) {
+//		  forward = 0;
+//	  }
+//	  else if (n64_status_curr.button_status[N64_DU]) {
+//		  forward = 0.1;
+//	  }
+//	  else if (n64_status_curr.button_status[N64_DD]){
+//		  forward = -0.1;
+//	  }
+//
+//	  if (n64_status_curr.button_status[N64_L] == n64_status_curr.button_status[N64_R]) {
+//		  left = 0;
+//	  }
+//	  else if (n64_status_curr.button_status[N64_L]) {
+//		  left = 0.1;
+//	  }
+//	  else if (n64_status_curr.button_status[N64_R]) {
+//		  left = -0.1;
+//	  }
+//
+//	  printf("F: %.2f\t\tL: %.2f\n\r", forward, left);
+//	  safe_drive(forward, left);
 //	  HAL_Delay(50);
 //	  continue;
 
@@ -188,12 +208,12 @@ int main(void)
 			  display_menu_1();
 
 			  // Go to next menu
-			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_2;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = menu_3;
 			  }
 
@@ -209,12 +229,12 @@ int main(void)
 			  display_menu_2();
 
 			  // Go to next menu
-			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_3;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = menu_1;
 			  }
 
@@ -230,12 +250,12 @@ int main(void)
 			  display_menu_3();
 
 			  // Go to next menu
-			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_1;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = menu_2;
 			  }
 
