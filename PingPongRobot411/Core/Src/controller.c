@@ -30,5 +30,8 @@ void controller_launch_ball() {
 	set_PWM(hbridges[1], 0);
 }
 
+void controller_drive(n64_t *n64_state) {
+}
+
 
 

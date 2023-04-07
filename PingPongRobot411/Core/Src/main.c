@@ -159,37 +159,55 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  int n64_count = 0;
+
   while (1)
   {
 	  // get input from controller
 	  n64_read(N64_POLL, &n64_status_curr);
 
 	  // drive testing stuff
+//	  if (n64_count == 25) {
+//		  n64_read(N64_RESET, NULL);
+//		  HAL_Delay(50);
+//		  n64_count = 0;
+//	  }
+//
+//	  // drive testing stuff
 //	  float forward, left;
 //	  if (n64_status_curr.button_status[N64_DU] == n64_status_curr.button_status[N64_DD]) {
 //		  forward = 0;
 //	  }
 //	  else if (n64_status_curr.button_status[N64_DU]) {
-//		  forward = 0.1;
+//		  forward = 1;
 //	  }
 //	  else if (n64_status_curr.button_status[N64_DD]){
-//		  forward = -0.1;
+//		  forward = -1;
 //	  }
 //
 //	  if (n64_status_curr.button_status[N64_L] == n64_status_curr.button_status[N64_R]) {
 //		  left = 0;
 //	  }
 //	  else if (n64_status_curr.button_status[N64_L]) {
-//		  left = 0.1;
+//		  left = 1;
 //	  }
 //	  else if (n64_status_curr.button_status[N64_R]) {
-//		  left = -0.1;
+//		  left = -1;
 //	  }
 //
-//	  printf("F: %.2f\t\tL: %.2f\n\r", forward, left);
+////
+////	  printf("F: %.2f\t\tL: %.2f\n\r", forward, left);
+////	  safe_drive(forward, left);
+////	  HAL_Delay(50);
+////	  continue;
+//
 //	  safe_drive(forward, left);
+//
+//	  ++n64_count;
 //	  HAL_Delay(50);
 //	  continue;
+
 
 	  // State machine
 	  switch(prev_state) {

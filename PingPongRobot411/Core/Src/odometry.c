@@ -42,7 +42,7 @@ void init_odom(odom_t* odom) {
 void update_odom(odom_t* odom) {
 	uint8_t calibration = get_imu_calib();
 	if (!is_calibrated(calibration)) {
-		printf("Not calibrated :(\n\r");
+		//printf("Not calibrated :(\n\r");
 		return;
 	}
 

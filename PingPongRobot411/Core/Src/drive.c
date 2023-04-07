@@ -3,6 +3,7 @@
 #include "ultrasonic.h"
 
 #include <math.h>
+#include <stdio.h>
 
 float max_magnitude(float a, float b) {
 	if (fabs(a) > fabs(b)) {
@@ -46,6 +47,11 @@ void safe_drive(float lin_forward, float rot_left) {
 		left_wheel /= max_mag;
 		right_wheel /= max_mag;
 	}
+
+	left_wheel *= 0.25;
+	right_wheel *= 0.25;
+
+	//printf("LW: %.3f\t\tRW: %.3f\n\r", left_wheel, right_wheel);
 
 	// Command HBridges.
 	set_PWM(hbridges[0], left_wheel);
