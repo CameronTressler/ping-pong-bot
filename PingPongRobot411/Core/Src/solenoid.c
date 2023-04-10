@@ -7,11 +7,11 @@ solenoid_t solenoid;
 
 void solenoid_init() {
 	// Set the GPIO information
-	solenoid.GPIOx = GPIOA;
-	solenoid.GPIO_Pin = GPIO_PIN_10;
+	solenoid.GPIOx = GPIOC;
+	solenoid.GPIO_Pin = GPIO_PIN_5;
 
 	// Make sure it isn't actuated
-	HAL_GPIO_WritePin(GPIOA,GPIO_PIN_10, 0);
+	HAL_GPIO_WritePin(GPIOC ,GPIO_PIN_5, 0);
 }
 
 void solenoid_actuate() {
