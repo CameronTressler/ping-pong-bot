@@ -1,6 +1,7 @@
 #include "serialDisplay.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include "main.h"
 
 display_t display;
@@ -100,6 +101,7 @@ void display_freeplay(void) {
 		display_write_string(display.top_text);
 		display.bottom_text = "Launch: A                               ";
 		display_write_string(display.bottom_text);
+		display.change = false;
 	}
 }
 
@@ -109,6 +111,7 @@ void display_playback_record(void) {
 		display.top_text = "STOP: B                                 ";
 		display_write_string(display.bottom_text);
 		display_write_string(display.top_text);
+		display.change = false;
 	}
 }
 
@@ -118,6 +121,7 @@ void display_playback_relocate(void) {
 		display.bottom_text = "START                                   ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
+		display.change = false;
 	}
 }
 
@@ -127,6 +131,7 @@ void display_playback_begin(void) {
 		display.bottom_text = "Get ready!                              ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
+		display.change = false;
 	}
 }
 

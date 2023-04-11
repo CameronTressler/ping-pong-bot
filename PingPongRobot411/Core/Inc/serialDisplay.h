@@ -2,6 +2,8 @@
 #define __SERIALDISPLAY_H
 
 #include <stdint.h>
+#include <stdbool.h>
+
 #include "main.h"
 
 typedef struct {
