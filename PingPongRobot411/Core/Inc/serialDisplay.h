@@ -7,6 +7,7 @@
 typedef struct {
 	int ball_count;
 	int countdown;
+	bool change;
 	char *top_text; // must be 40 characters wide!!
 	char *bottom_text; // must be 40 characters wide!!
 
