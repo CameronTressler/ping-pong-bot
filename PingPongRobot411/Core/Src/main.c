@@ -159,6 +159,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  /*
 	  // get input from controller
 	  n64_read(N64_POLL, &n64_status_curr);
 
@@ -247,7 +248,7 @@ int main(void)
 			  }
 
 			  // Drive robot
-			  if(/* something */false) { // TODO: this is false to compile
+			  if(/* something *//*false) { // TODO: this is false to compile
 				  controller_drive();
 			  }
 
