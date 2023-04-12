@@ -68,7 +68,7 @@ typedef struct {
 void init_odom(odom_t* odom);
 void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras);
 
-void calibrate_corner(odom_t* odom);
+void calibrate_corner(odom_t* odom, uint8_t corner_num);
 void adjust_off_table(odom_t* odom);
 
 extern odom_t odometry;

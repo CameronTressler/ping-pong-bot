@@ -29,7 +29,7 @@ int is_imu_calibrated() {
 	// Return whether accelerometer and gyro are calibrated.
 	// Magnetometer calibration is very flaky and doesn't seem to matter.
 
-	if ((data & 0b00111111) >= 60) {
+	if ((data & 0b11111111) >= 60) {
 		return 1;
 	}
 
@@ -42,8 +42,6 @@ void init_odom(odom_t* odom) {
 	odom->y_rel = 0.0;
 	odom->velocity = 0.0;
 	odom->heading = 0.0;
-
-	odom->iterations_no_accel = 0;
 
 	for (int i = 0; i < 4; ++i) {
 		odom->x_corner[i] = 0.0;
@@ -72,7 +70,7 @@ float predict_velocity(float prev_vel, float left_cmd, float right_cmd) {
 
 	// Approximate the velocity we asymptotically would reach.
 	// TODO: Check if positive is forward.
-	float target_vel = agv_cmd * CMD_TO_VEL;
+	float target_vel = avg_cmd * CMD_TO_VEL;
 
 	// Find a predicted velocity, factoring in acceleration.
 	float new_vel;
@@ -139,28 +137,28 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	}
 }
 
-void calibrate_corner(odom_t* odom, uint8_t corner_num) {
-	odom->x_corner[corner_num] = odom->x_rel;
-	odom->y_corner[corner_num] = odom->y_rel;
-}
-
-float distance_to_line(odom_t* odom, uint8_t c_1, uint8_t c_2) {
-	float numerator = fabs(
-		(odom->x_corner[c_2] - odom->x_corner[c_1]) *
-		(odom->y_corner[c_1] - odom->y_rel) -
-		(odom->x_corner[c_1] - odom->x_rel) *
-		(odom->y_corner[c_2] - odom->y_corner[c_1])
-	);
-
-	float denominator = pow((odom->x_corner[c_2] - odom->x_corner[c_1]), 2);
-
-
-}
-
-void adjust_off_table(odom_t* odom) {
-	// Find closest edge of table.
-
-
-}
+//void calibrate_corner(odom_t* odom, uint8_t corner_num) {
+//	odom->x_corner[corner_num] = odom->x_rel;
+//	odom->y_corner[corner_num] = odom->y_rel;
+//}
+//
+//float distance_to_line(odom_t* odom, uint8_t c_1, uint8_t c_2) {
+//	float numerator = fabs(
+//		(odom->x_corner[c_2] - odom->x_corner[c_1]) *
+//		(odom->y_corner[c_1] - odom->y_rel) -
+//		(odom->x_corner[c_1] - odom->x_rel) *
+//		(odom->y_corner[c_2] - odom->y_corner[c_1])
+//	);
+//
+//	float denominator = pow((odom->x_corner[c_2] - odom->x_corner[c_1]), 2);
+//
+//
+//}
+//
+//void adjust_off_table(odom_t* odom) {
+//	// Find closest edge of table.
+//
+//
+//}
 
 odom_t odometry;
