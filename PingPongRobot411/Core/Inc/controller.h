@@ -15,8 +15,8 @@
 // External values
 
 // Defined values
-#define LAUNCH_PWM 0.5f
-#define LAUNCH_DELAY 50
+#define LAUNCH_PWM 1.0
+#define LAUNCH_DELAY 3000
 
 // Functions
 void controller_launch_ball();

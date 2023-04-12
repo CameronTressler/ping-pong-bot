@@ -20,10 +20,11 @@ void controller_launch_ball() {
 	set_PWM(hbridges[3], -LAUNCH_PWM);
 
 	// Maybe delay slightly to get up to speed?
-	//HAL_Delay(LAUNCH_DELAY);
+	HAL_Delay(LAUNCH_DELAY);
 
 	// Actuate solenoid
 	solenoid_actuate();
+	HAL_Delay(LAUNCH_DELAY/3);
 
 	// Turn off hbridges
 	set_PWM(hbridges[2], 0);
