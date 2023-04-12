@@ -103,9 +103,9 @@ int main(void)
 
   /* USER CODE BEGIN Init */
   // Initiliaze ultrasonics.
-  for (unsigned int i = 0; i < NUM_ULTRAS; ++i) {
-	  init_ultra(ultras + i);
-  }
+//  for (unsigned int i = 0; i < NUM_ULTRAS; ++i) {
+//	  init_ultra(ultras + i);
+//  }
 
   /* USER CODE END Init */
 
@@ -121,7 +121,7 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM3_Init();
   MX_I2C3_Init();
-  MX_TIM10_Init();
+//  MX_TIM10_Init();
   MX_USART2_UART_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
@@ -136,15 +136,15 @@ int main(void)
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 
   init_hbridges();
-  solenoid_init();
-  display_init();
+//  solenoid_init();
+//  display_init();
 
   n64_init(&n64_status_prev);
   n64_init(&n64_status_curr);
   n64_read(N64_RESET, NULL);
 
-  init_odom(&odometry);
-  init_imu();
+//  init_odom(&odometry);
+//  init_imu();
 
   // Start IMU timer
   //HAL_TIM_Base_Start_IT(&htim10);
@@ -165,8 +165,21 @@ int main(void)
 
   while (1)
   {
+
+	  if (n64_count = 25) {
+	  	n64_read(N64_RESET, NULL);
+	  	n64_count = 0;
+	  }
 	  // get input from controller
 	  n64_read(N64_POLL, &n64_status_curr);
+
+	  // drive testing -- TODO remove when integrating state machine
+	  controller_drive(&n64_status_curr);
+	  n64_count++;
+	  continue;
+
+
+
 
 	  // State machine
 	  switch(prev_state) {
@@ -382,7 +395,7 @@ int main(void)
 	  }
 
 	  prev_state = curr_state;
-
+	  n64_count++;
 	  n64_copy(&n64_status_prev, &n64_status_curr); // update n64 state
 	  HAL_Delay(50); // without some delay the n64 inputs are finnicky
 

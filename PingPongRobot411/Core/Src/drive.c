@@ -30,12 +30,12 @@ void safe_drive(float lin_forward, float rot_left) {
 	rot_left = adjust_deadzone(rot_left);
 
 	// Stop the robot from driving off the table.
-	if (lin_forward > 0 && is_off_table(ultras + FRONT_ULTRA)) {
-		lin_forward = 0;
-	}
-	else if (lin_forward < 0 && is_off_table(ultras + REAR_ULTRA)) {
-		lin_forward = 0;
-	}
+//	if (lin_forward > 0 && is_off_table(ultras + FRONT_ULTRA)) {
+//		lin_forward = 0;
+//	}
+//	else if (lin_forward < 0 && is_off_table(ultras + REAR_ULTRA)) {
+//		lin_forward = 0;
+//	}
 
 	// Convert to l/r drive.
 	float left_wheel = lin_forward - rot_left / 2;
