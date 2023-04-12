@@ -5,7 +5,7 @@
 #include "main.h"
 
 // Define
-#define SOL_DELAY 500
+#define SOL_DELAY 250
 
 // Solenoid
 typedef struct {

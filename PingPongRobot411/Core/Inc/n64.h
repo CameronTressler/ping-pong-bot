@@ -23,6 +23,7 @@
 
 // other constants
 #define N64_NUM_VALUES 17
+#define N64_MAX_JOYSTICK 128
 
 // enum for n64 buttons -- used as index to button_status array
 typedef enum {
@@ -49,5 +50,10 @@ void n64_update(uint32_t poll_rx_msg, n64_t *n64_state);
 
 // check if button has been pressed
 bool n64_button_pressed(n64_t *prev, n64_t *curr, n64_button button);
+
+// drive
+float n64_scale_joystick(n64_t *state, n64_button button);
+
+
 
 #endif

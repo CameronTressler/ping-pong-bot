@@ -1,6 +1,8 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#include "n64.h"
+
 /*
  * arrows for menu
  * A for some select and launch
@@ -19,6 +21,6 @@
 // Functions
 void controller_launch_ball();
 
-void controller_drive(); // TODO: need clearer interface with n64
+void controller_drive(n64_t *n64_state);
 
 #endif /* INC_CONTOLLER_H_ */

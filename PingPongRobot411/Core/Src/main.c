@@ -30,6 +30,7 @@
 #include "serialDisplay.h"
 #include "controller.h"
 #include "solenoid.h"
+#include "drive.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -135,17 +136,18 @@ int main(void)
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
 
   init_hbridges();
-
+  solenoid_init();
   display_init();
 
   n64_init(&n64_status_prev);
   n64_init(&n64_status_curr);
+  n64_read(N64_RESET, NULL);
 
   init_odom(&odometry);
   init_imu();
 
   // Start IMU timer
-  HAL_TIM_Base_Start_IT(&htim10);
+  //HAL_TIM_Base_Start_IT(&htim10);
 
   // State machine
   display_state curr_state = welcome;
@@ -153,13 +155,16 @@ int main(void)
 
   // Is htim5 init?
   bool htim5_int = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  int n64_count = 0;
+
   while (1)
   {
-	  /*
 	  // get input from controller
 	  n64_read(N64_POLL, &n64_status_curr);
 
@@ -171,6 +176,7 @@ int main(void)
 			  // Go to menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_Start)){
 				  curr_state = menu_1;
+				  display.change = true;
 			  }
 
 			  break;
@@ -180,18 +186,21 @@ int main(void)
 			  display_menu_1();
 
 			  // Go to next menu
-			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_2;
+				  display.change = true;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 
 			  // Or go to launching
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  curr_state = launch;
+				  display.change = true;
 			  }
 
 			  break;
@@ -201,18 +210,21 @@ int main(void)
 			  display_menu_2();
 
 			  // Go to next menu
-			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = menu_1;
+				  display.change = true;
 			  }
 
 			  // Go to start playback
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  curr_state = pb_countdown;
+				  display.change = true;
 			  }
 
 			  break;
@@ -222,18 +234,21 @@ int main(void)
 			  display_menu_3();
 
 			  // Go to next menu
-			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DD)) {
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_1;
+				  display.change = true;
 			  }
 
 			  // Go to previous menu
-			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_DU)) {
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = menu_2;
+				  display.change = true;
 			  }
 
 			  // Go to intervals
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  curr_state = intervals_countdown;
+				  display.change = true;
 			  }
 
 			  break;
@@ -246,15 +261,14 @@ int main(void)
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  controller_launch_ball();
 			  }
-
-			  // Drive robot
-			  if(/* something *//*false) { // TODO: this is false to compile
-				  controller_drive();
+			  else {
+				  controller_drive(&n64_status_curr);
 			  }
 
 			  // Exit
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_1;
+				  display.change = true;
 			  }
 
 			  break;
@@ -270,6 +284,7 @@ int main(void)
 			  if(display.countdown == 0) {
 				  display.countdown = 3;
 				  curr_state = pb_record;
+				  display.change = true;
 			  }
 
 			  // If not, decrement
@@ -288,6 +303,7 @@ int main(void)
 			  // Exit
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = pb_relocate;
+				  display.change = true;
 			  }
 
 			  break;
@@ -299,6 +315,7 @@ int main(void)
 			  // Start playback
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_Start)) {
 				  curr_state = pb_begin;
+				  display.change = true;
 			  }
 			  break;
 		  }
@@ -321,6 +338,7 @@ int main(void)
 			  if(display.countdown == 0) {
 				  display.countdown = 3;
 				  curr_state = intervals;
+				  display.change = true;
 			  }
 
 			  // If not, decrement
@@ -351,6 +369,7 @@ int main(void)
 			  // Exit and cancel interrupt
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
+				  display.change = true;
 				  htim5_int = 0;
 				  if(HAL_TIM_Base_Stop_IT(&htim5) != HAL_OK) {
 					  Error_Handler();
@@ -363,6 +382,7 @@ int main(void)
 	  }
 
 	  prev_state = curr_state;
+
 	  n64_copy(&n64_status_prev, &n64_status_curr); // update n64 state
 	  HAL_Delay(50); // without some delay the n64 inputs are finnicky
 
@@ -584,7 +604,6 @@ static void MX_TIM5_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM5_Init 1 */
 
@@ -604,21 +623,9 @@ static void MX_TIM5_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_OC_Init(&htim5) != HAL_OK)
-  {
-    Error_Handler();
-  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_OC_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -724,12 +731,11 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
-                          |GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|LD2_Pin|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8
+                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
@@ -746,10 +752,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 LD2_Pin PA10 PA11
-                           PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|LD2_Pin|GPIO_PIN_10|GPIO_PIN_11
-                          |GPIO_PIN_12;
+  /*Configure GPIO pins : PA0 LD2_Pin PA11 PA12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|LD2_Pin|GPIO_PIN_11|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -767,10 +771,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC6 PC7 PC8 PC10
-                           PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8|GPIO_PIN_10
-                          |GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : PC5 PC6 PC7 PC8
+                           PC10 PC11 PC12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8
+                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -821,10 +825,15 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	set_PWM(hbridges[0], 0);
+	set_PWM(hbridges[1], 0);
+	set_PWM(hbridges[2], 0);
+	set_PWM(hbridges[3], 0);
+	__disable_irq();
+	while (1)
+	{
+
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 

@@ -1,6 +1,7 @@
 #include "serialDisplay.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include "main.h"
 
 display_t display;
@@ -86,76 +87,103 @@ void display_reset_ball_count(void) {
 	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
+
 }
 
 void display_freeplay(void) {
-	display.top_text = "";
+	if(display.change) {
+		display.top_text = "";
 
-	char top_str[50];
-	strcpy(top_str, "Balls: ");
+		char top_str[50];
+		strcpy(top_str, "Balls: ");
 
-	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
-	display_write_string(display.top_text);
-	display.bottom_text = "Launch: A                               ";
-	display_write_string(display.bottom_text);
+		display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
+		display_write_string(display.top_text);
+		display.bottom_text = "Launch: A                               ";
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_playback_record(void) {
-	display.bottom_text = "RECORDING...                            ";
-	display.top_text = "STOP: B                                 ";
-	display_write_string(display.bottom_text);
-	display_write_string(display.top_text);
+	if(display.change) {
+		display.bottom_text = "RECORDING...                            ";
+		display.top_text = "STOP: B                                 ";
+		display_write_string(display.bottom_text);
+		display_write_string(display.top_text);
+		display.change = false;
+	}
 }
 
 void display_playback_relocate(void) {
-	display.top_text = "Relocate                                ";
-	display.bottom_text = "START                                   ";
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
-
+	if(display.change) {
+		display.top_text = "Relocate                                ";
+		display.bottom_text = "START                                   ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_playback_begin(void) {
-	display.top_text = "Play Back                               ";
-	display.bottom_text = "Get ready!                              ";
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+	if(display.change) {
+		display.top_text = "Play Back                               ";
+		display.bottom_text = "Get ready!                              ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_intervals_begin(void) {
-	display.top_text = "Intervals                               ";
-	display.bottom_text = "STOP: B                                 ";
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+	if(display.change) {
+		display.top_text = "Intervals                               ";
+		display.bottom_text = "STOP: B                                 ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_menu_1(void) {
-	display.top_text = "Free Play                               ";
-	display.bottom_text = "Press A                                 ";
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+	if(display.change) {
+		display.top_text = "Free Play                               ";
+		display.bottom_text = "Press A                                 ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_menu_2(void) {
-	display.top_text = "Play Back                               ";
-	display.bottom_text = "Press A                                 ";
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+	if(display.change) {
+		display.top_text = "Play Back                               ";
+		display.bottom_text = "Press A                                 ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_menu_3(void) {
-	display.top_text = "Intervals                               ";
-	display.bottom_text = "Press A                                 ";
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+	if(display.change) {
+		display.top_text = "Intervals                               ";
+		display.bottom_text = "Press A                                 ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 
 }
 
 void display_welcome(void) {
-	display.top_text = "WELCOME                                 ";
-	display.bottom_text = "Press START                             ";
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+	if(display.change) {
+		display.top_text = "WELCOME                                 ";
+		display.bottom_text = "Press START                             ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 
 }
 
@@ -194,12 +222,16 @@ void display_send_data(char data) {
 	data_t[1] = data_u|0x09;  //en=0, rs=0
 	data_t[2] = data_l|0x0D;  //en=1, rs=0
 	data_t[3] = data_l|0x09;  //en=0, rs=0
-	HAL_I2C_Master_Transmit (&hi2c3, DISPLAY_ADDR,(uint8_t *) data_t, 4, 100);
+	int err = HAL_I2C_Master_Transmit (&hi2c3, DISPLAY_ADDR,(uint8_t *) data_t, 4, 100);
+	if(err != HAL_OK) {
+		Error_Handler();
+	}
 }
 
 void display_init (void)
 {
 	display.countdown = 3;
+	display.change = true;
 
 	// 4 bit initialisation
 	HAL_Delay(50);  // wait for >40ms
@@ -226,7 +258,9 @@ void display_init (void)
 }
 
 void display_write_string(char *str){
+	__disable_irq();
 	while (*str) display_send_data (*str++);
+	__enable_irq();
 }
 
 
