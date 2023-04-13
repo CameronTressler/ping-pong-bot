@@ -16,8 +16,8 @@ void controller_launch_ball() {
 	decrement_ball_count();
 
 	// Start launcher
-	set_PWM(hbridges[2], LAUNCH_PWM);
-	set_PWM(hbridges[3], -LAUNCH_PWM);
+	set_PWM(hbridges + 2, LAUNCH_PWM);
+	set_PWM(hbridges + 3, -LAUNCH_PWM);
 
 	// Maybe delay slightly to get up to speed?
 	HAL_Delay(LAUNCH_DELAY);
@@ -27,8 +27,8 @@ void controller_launch_ball() {
 	HAL_Delay(LAUNCH_DELAY/3);
 
 	// Turn off hbridges
-	set_PWM(hbridges[2], 0);
-	set_PWM(hbridges[3], 0);
+	set_PWM(hbridges + 2, 0);
+	set_PWM(hbridges + 3, 0);
 }
 
 void controller_drive(n64_t *n64_state) {

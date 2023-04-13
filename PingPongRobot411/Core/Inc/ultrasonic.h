@@ -21,6 +21,7 @@ void init_ultra(ultra_t* ultra);
 void update_ultra(ultra_t* ultra, unsigned int current_count);
 
 unsigned int is_off_table(ultra_t* ultra);
+unsigned int ultras_off_table();
 
 extern ultra_t ultras[NUM_ULTRAS];
 

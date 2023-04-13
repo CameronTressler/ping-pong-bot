@@ -37,11 +37,11 @@ void init_hbridges();
 
 
 // Set PWM (0-1.0)
-void set_PWM(hbridge_t hbridge, float PWM);
+void set_PWM(hbridge_t* hbridge, float PWM);
 
 // Get PWM (0-1.0)
-float get_PWM(hbridge_t hbridge);
+float get_PWM(hbridge_t* hbridge);
 
-int get_dir(hbridge_t hbridge);
+int get_dir(hbridge_t* hbridge);
 
 #endif /* INC_HBRIDGE_H_ */

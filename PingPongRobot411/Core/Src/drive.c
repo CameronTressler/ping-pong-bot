@@ -54,6 +54,6 @@ void safe_drive(float lin_forward, float rot_left) {
 	//printf("LW: %.3f\t\tRW: %.3f\n\r", left_wheel, right_wheel);
 
 	// Command HBridges.
-	set_PWM(hbridges[0], left_wheel);
-	set_PWM(hbridges[1], right_wheel);
+	set_PWM(hbridges + 0, left_wheel);
+	set_PWM(hbridges + 1, right_wheel);
 }

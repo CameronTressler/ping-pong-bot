@@ -2,6 +2,8 @@
 #define __ODOMETRY_H
 
 #include "main.h"
+#include "ultrasonic.h"
+#include "hbridge.h"
 
 // The IMU communicates over I2C with the following address.
 #define IMU_ADDR 0x28
@@ -18,9 +20,13 @@
 // Register for reading calibration status
 #define CALIB_STAT_REG 0x35
 
+typedef struct {
+	uint8_t data;
+	uint8_t age;
+} imu_calib_t;
+
 void init_imu();
-uint8_t get_imu_calib();
-int is_calibrated(uint8_t data);
+int is_imu_calibrated(imu_calib_t* calib);
 
 // Output rate for fusion data is 100Hz.
 #define IMU_UPDATE_RT 100.0
@@ -28,12 +34,15 @@ int is_calibrated(uint8_t data);
 #define EUL_DATA_X 0x1A
 #define LIA_DATA_X 0x28
 
-// The upper limit for an acceleration to be converted to zero, in mg.
-#define ACCEL_ZERO_THRESHOLD 10
+// The ratio of hbridge commands to expected velocity in m/s.
+#define CMD_TO_VEL 0.75
 
-// The upper limit for the number iterations acceleration is zero before
-// velocity is also converted to zero.
-#define VELOCITY_ZERO_THRESHOLD 3
+// The expected max amount of change in velocity per iteration.
+#define DELTA_ACCEL 0.02
+#define DELTA_DECCEL 0.05
+
+#define PREDICTED_RATIO 1.0
+
 
 typedef union {
 	struct {
@@ -49,21 +58,30 @@ typedef union {
 } imu_raw_data_t;
 
 typedef struct {
-	double x_rel;
-	double y_rel;
+	float x_rel;
+	float y_rel;
 
-	double velocity;
-	double heading;
+	float velocity;
+	float heading;
 
-	uint8_t iterations_no_accel;
+	float x_corner[4];
+	float y_corner[4];
+
+	uint8_t calib_age;
 
 	uint32_t i;
 } odom_t;
 
-void init_odom(odom_t* odom);
-void update_odom(odom_t* odom);
-void update_position(odom_t* odom, double dist);
+#define CALIB_LIFE 100
 
+void init_odom(odom_t* odom);
+void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras);
+
+void calibrate_corner(odom_t* odom, uint8_t corner_num);
+void adjust_off_table(odom_t* odom);
+float predict_velocity(float prev_vel, float left_cmd, float right_cmd);
+
+extern imu_calib_t calibration;
 extern odom_t odometry;
 
 #endif

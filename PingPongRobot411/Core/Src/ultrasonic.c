@@ -50,4 +50,8 @@ unsigned int is_off_table(ultra_t* ultra) {
 	return 0;
 }
 
+unsigned int ultras_off_table() {
+	return is_off_table(ultras + FRONT_ULTRA) || is_off_table(ultras + REAR_ULTRA);
+}
+
 ultra_t ultras[NUM_ULTRAS];
