@@ -838,10 +838,14 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+	set_PWM(hbridges[0], 0);
+	set_PWM(hbridges[1], 0);
+	set_PWM(hbridges[2], 0);
+	set_PWM(hbridges[3], 0);
 	__disable_irq();
 	while (1)
 	{
+
 	}
   /* USER CODE END Error_Handler_Debug */
 }

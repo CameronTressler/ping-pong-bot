@@ -38,8 +38,8 @@ void safe_drive(float lin_forward, float rot_left) {
 //	}
 
 	// Convert to l/r drive.
-	float left_wheel = lin_forward - rot_left / 2;
-	float right_wheel = lin_forward + rot_left / 2;
+	float left_wheel = lin_forward - rot_left / 1.5;
+	float right_wheel = lin_forward + rot_left / 1.5;
 
 	// Adjust values if conversion to l/r drive pushed magnitude over 1.0.
 	float max_mag = max_magnitude(left_wheel, right_wheel);
@@ -48,8 +48,8 @@ void safe_drive(float lin_forward, float rot_left) {
 		right_wheel /= max_mag;
 	}
 
-	left_wheel *= 0.25;
-	right_wheel *= 0.25;
+	left_wheel *= 0.5;
+	right_wheel *= 0.5;
 
 	//printf("LW: %.3f\t\tRW: %.3f\n\r", left_wheel, right_wheel);
 
