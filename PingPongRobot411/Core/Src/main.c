@@ -166,7 +166,7 @@ int main(void)
   while (1)
   {
 
-	  if (n64_count = 25) {
+	  if (n64_count == 25) {
 	  	n64_read(N64_RESET, NULL);
 	  	n64_count = 0;
 	  }
