@@ -22,18 +22,25 @@ void init_imu() {
 }
 
 
-int is_imu_calibrated() {
-	uint8_t data;
-	i2c_read(IMU_ADDR, CALIB_STAT_REG, &data, 1);
+int is_imu_calibrated(imu_calib_t* calib) {
+	if (calib->age > CALIB_LIFE) {
+		uint8_t data;
+		i2c_read(IMU_ADDR, CALIB_STAT_REG, &data, 1);
+
+		calib->data = data;
+		calib->age = 0;
+
+		printf("Calibration: %d\n\r", data);
+	}
+
+	++calib->age;
 
 	// Return whether accelerometer and gyro are calibrated.
 	// Magnetometer calibration is very flaky and doesn't seem to matter.
 
-	if ((data & 0b11111111) >= 60) {
+	if ((calib->data & 0b11111111) >= 60) {
 		return 1;
 	}
-
-	printf("Calibration: %d\n\r", data);
 	return 0;
 }
 
@@ -47,6 +54,8 @@ void init_odom(odom_t* odom) {
 		odom->x_corner[i] = 0.0;
 		odom->y_corner[i] = 0.0;
 	}
+
+	odom->calib_age = 0;
 }
 
 void update_position(odom_t* odom, float dist) {
@@ -93,9 +102,10 @@ float predict_velocity(float prev_vel, float left_cmd, float right_cmd) {
 }
 
 void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
-	if (!is_imu_calibrated()) {
-		return;
-	}
+//	if (!is_imu_calibrated(&calibration)) {
+//		return;
+//	}
+	is_imu_calibrated(&calibration);
 
 	imu_raw_data_t yaw, lin_accel;
 
@@ -133,7 +143,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 
 	++(odom->i);
 	if (odom->i % 25 == 0) {
-		printf("%f : %f : %f : %f\n\r", accel, odom->heading, odom->x_rel, odom->y_rel);
+		printf("%f : %f : %f : %f\n\r", odom->heading, odom->velocity, odom->x_rel, odom->y_rel);
 	}
 }
 
@@ -162,3 +172,5 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //}
 
 odom_t odometry;
+imu_calib_t calibration;
+

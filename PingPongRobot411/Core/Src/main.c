@@ -121,7 +121,7 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM3_Init();
   MX_I2C3_Init();
-//  MX_TIM10_Init();
+  MX_TIM10_Init();
   MX_USART2_UART_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
@@ -143,8 +143,8 @@ int main(void)
   n64_init(&n64_status_curr);
   n64_read(N64_RESET, NULL);
 
-//  init_odom(&odometry);
-//  init_imu();
+  init_odom(&odometry);
+  init_imu();
 
   // Start IMU timer
   HAL_TIM_Base_Start_IT(&htim10);
@@ -166,7 +166,7 @@ int main(void)
   while (1)
   {
 
-	  if (n64_count = 25) {
+	  if (n64_count == 25) {
 	  	n64_read(N64_RESET, NULL);
 	  	n64_count = 0;
 	  }

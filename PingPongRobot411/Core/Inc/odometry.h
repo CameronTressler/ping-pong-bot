@@ -20,9 +20,13 @@
 // Register for reading calibration status
 #define CALIB_STAT_REG 0x35
 
+typedef struct {
+	uint8_t data;
+	uint8_t age;
+} imu_calib_t;
+
 void init_imu();
-uint8_t get_imu_calib();
-int is_calibrated(uint8_t data);
+int is_imu_calibrated(imu_calib_t* calib);
 
 // Output rate for fusion data is 100Hz.
 #define IMU_UPDATE_RT 100.0
@@ -36,7 +40,7 @@ int is_calibrated(uint8_t data);
 // The expected max amount of change in velocity per iteration.
 #define DELTA_VEL 0.01
 
-#define PREDICTED_RATIO 0.5
+#define PREDICTED_RATIO 1.0
 
 
 typedef union {
@@ -62,8 +66,12 @@ typedef struct {
 	float x_corner[4];
 	float y_corner[4];
 
+	uint8_t calib_age;
+
 	uint32_t i;
 } odom_t;
+
+#define CALIB_LIFE 100
 
 void init_odom(odom_t* odom);
 void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras);
@@ -71,6 +79,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras);
 void calibrate_corner(odom_t* odom, uint8_t corner_num);
 void adjust_off_table(odom_t* odom);
 
+extern imu_calib_t calibration;
 extern odom_t odometry;
 
 #endif
