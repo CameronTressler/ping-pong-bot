@@ -147,7 +147,7 @@ int main(void)
   init_imu();
 
   // Start IMU timer
-  // HAL_TIM_Base_Start_IT(&htim10);
+  HAL_TIM_Base_Start_IT(&htim10);
 
   // State machine
   display_state curr_state = welcome;
