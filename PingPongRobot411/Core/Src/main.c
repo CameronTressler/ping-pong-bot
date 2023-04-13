@@ -147,7 +147,7 @@ int main(void)
   init_imu();
 
   // Start IMU timer
-  //HAL_TIM_Base_Start_IT(&htim10);
+  // HAL_TIM_Base_Start_IT(&htim10);
 
   // State machine
   display_state curr_state = welcome;
@@ -161,10 +161,16 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  int n64_count = 0;
+  // int n64_count = 0;
 
   while (1)
   {
+//	  if (n64_count == 25) {
+//		  n64_read(N64_RESET, NULL);
+//		  n64_count = 0;
+//	  }
+//	  ++n64_count;
+
 	  // get input from controller
 	  n64_read(N64_POLL, &n64_status_curr);
 
