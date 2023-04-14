@@ -30,7 +30,7 @@ int is_imu_calibrated(imu_calib_t* calib) {
 		calib->data = data;
 		calib->age = 0;
 
-		printf("Calibration: %d\n\r", data);
+		//printf("Calibration: %d\n\r", data);
 	}
 
 	++calib->age;
@@ -154,7 +154,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 
 	++(odom->i);
 	if (odom->i % 25 == 0) {
-		printf("%f : %f : %f : %f\n\r", odom->heading, odom->velocity, odom->x_rel, odom->y_rel);
+		//printf("%f : %f : %f : %f\n\r", odom->heading, odom->velocity, odom->x_rel, odom->y_rel);
 	}
 }
 

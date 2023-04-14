@@ -153,7 +153,7 @@ int main(void)
   display_state curr_state = welcome;
   display_state prev_state = welcome;
 
-  // Is htim5 init?
+  // Is htim5 interrupt
   bool htim5_int = 0;
 
   /* USER CODE END 2 */
@@ -162,6 +162,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
   int n64_count = 0;
+
 
   while (1)
   {
@@ -555,7 +556,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 21;
+  htim4.Init.Prescaler = 5;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 65535;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -756,7 +757,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : PC0 PC1 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA0 LD2_Pin PA11 PA12 */

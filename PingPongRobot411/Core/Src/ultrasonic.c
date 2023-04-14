@@ -1,5 +1,6 @@
 #include "ultrasonic.h"
 #include "hbridge.h"
+#include <stdio.h>
 
 float get_ultra_distance_in(unsigned int count_us) {
 	return ((float) count_us) / 144.0;
@@ -32,15 +33,15 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 			if (ultra->off_table < 3) {
 				++ultra->off_table;
 
-//				if (ultra->off_table == 3) {
-//					set_PWM(hbridges + 0, -1 * get_PWM(hbridges + 0));
-//					set_PWM(hbridges + 1, -1 * get_PWM(hbridges + 1));
-//
-//					HAL_Delay(20);
-//
-//					set_PWM(hbridges + 0, 0.0);
-//					set_PWM(hbridges + 1, 0.0);
-//				}
+				if (ultra->off_table == 3) {
+					set_PWM(hbridges + 0, -1 * get_PWM(hbridges + 0));
+					set_PWM(hbridges + 1, -1 * get_PWM(hbridges + 1));
+
+					HAL_Delay(20);
+
+					set_PWM(hbridges + 0, 0.0);
+					set_PWM(hbridges + 1, 0.0);
+				}
 			}
 		}
 		else {
@@ -51,6 +52,7 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 
 		// Reset count for beginning of next echo.
 		ultra->count_of_echo_start = 0;
+		printf("%d\n\r", ultra->off_table);
 	}
 }
 
