@@ -148,9 +148,9 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	update_position(odom, odom->velocity / IMU_UPDATE_RT);
 
 	// Correct position.
-	if (ultras_off_table()) {
-
-	}
+//	if (ultras_off_table()) {
+//
+//	}
 
 	++(odom->i);
 	if (odom->i % 25 == 0) {

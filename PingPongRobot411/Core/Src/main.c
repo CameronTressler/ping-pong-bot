@@ -165,11 +165,11 @@ int main(void)
 
   while (1)
   {
-	  if (n64_count == 25) {
-		  n64_read(N64_RESET, NULL);
-		  HAL_Delay(50); // without some delay the n64 inputs are finnicky
-		  n64_count = 0;
-	  }
+//	  if (n64_count == 25) {
+//		  n64_read(N64_RESET, NULL);
+//		  HAL_Delay(50); // without some delay the n64 inputs are finnicky
+//		  n64_count = 0;
+//	  }
 	  ++n64_count;
 
 	  // get input from controller
@@ -772,12 +772,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
   /*Configure GPIO pins : PC5 PC6 PC7 PC8
                            PC10 PC11 PC12 */
   GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8
@@ -800,9 +794,6 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
