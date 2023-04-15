@@ -213,6 +213,31 @@ void display_intervals_countdown(void) {
 	display_write_string(display.bottom_text);
 }
 
+void display_intervals_high(void) {
+	display.top_text = "Select Speed                            ";
+	display.bottom_text = "A: High Speed                           ";
+
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
+}
+
+void display_intervals_medium(void) {
+	display.top_text = "Select Speed                            ";
+	display.bottom_text = "A: Medium Speed                         ";
+
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
+}
+
+void display_intervals_low(void) {
+	display.top_text = "Select Speed                            ";
+	display.bottom_text = "A: Low Speed                            ";
+
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
+}
+
+
 void display_send_data(char data) {
 	char data_u, data_l;
 	uint8_t data_t[4];

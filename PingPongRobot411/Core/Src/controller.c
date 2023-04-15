@@ -15,28 +15,27 @@ void controller_launch_ball() {
 	// Adjust display
 	decrement_ball_count();
 
-	// Start launcher
-	set_PWM(hbridges + 2, -1 * LAUNCH_START_PWM);
-	set_PWM(hbridges + 3, LAUNCH_START_PWM);
-
-	// Delay slightly to gather inertia.
-	HAL_Delay(LAUNCH_START_DELAY);
-
-
-	// Spin launcher to final speed
-	set_PWM(hbridges + 2, -1 * LAUNCH_PWM);
-	set_PWM(hbridges + 3, LAUNCH_PWM);
-
-	// Delay slightly to get up to speed?
-	HAL_Delay(LAUNCH_DELAY);
-
 	// Actuate solenoid
 	solenoid_actuate();
 	HAL_Delay(1000);
 
-	// Turn off hbridges
-	set_PWM(hbridges + 2, 0);
-	set_PWM(hbridges + 3, 0);
+}
+
+void controller_start_launcher(float start_pwm, float launch_pwm) {
+	// Start launcher
+		set_PWM(hbridges + 2, -1 * start_pwm);
+		set_PWM(hbridges + 3, start_pwm);
+
+		// Delay slightly to gather inertia.
+		HAL_Delay(LAUNCH_START_DELAY);
+
+
+		// Spin launcher to final speed
+		set_PWM(hbridges + 2, -1 * launch_pwm);
+		set_PWM(hbridges + 3, launch_pwm);
+
+		// Delay slightly to get up to speed?
+		HAL_Delay(LAUNCH_DELAY);
 }
 
 void controller_drive(n64_t *n64_state) {

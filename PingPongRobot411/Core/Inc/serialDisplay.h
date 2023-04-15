@@ -27,8 +27,10 @@ typedef enum
 	pb_relocate,
 	pb_begin,
 	intervals,
-	intervals_countdown
-
+	intervals_countdown,
+	intervals_select_high,
+	intervals_select_medium,
+	intervals_select_low
 } display_state;
 
 extern I2C_HandleTypeDef hi2c3;
@@ -64,6 +66,12 @@ void display_menu_1(void);
 void display_menu_2(void);
 
 void display_menu_3(void);
+
+void display_intervals_high(void);
+
+void display_intervals_medium(void);
+
+void display_intervals_low(void);
 
 // Count down display
 void display_pb_countdown(void);

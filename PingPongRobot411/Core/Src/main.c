@@ -91,6 +91,7 @@ extern solenoid_t solenoid;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+//	NVIC_SystemReset();
 	n64_t n64_status_prev;
 	n64_t n64_status_curr;
 
@@ -152,9 +153,11 @@ int main(void)
   // State machine
   display_state curr_state = welcome;
   display_state prev_state = welcome;
-
+  float intervals_pwm = 0;
   // Is htim5 interrupt
   bool htim5_int = 0;
+
+  bool set_freeplay_pwm = true;
 
   /* USER CODE END 2 */
 
@@ -207,6 +210,7 @@ int main(void)
 
 			  // Or go to launching
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  set_freeplay_pwm = true;
 				  curr_state = launch;
 				  display.change = true;
 			  }
@@ -255,7 +259,7 @@ int main(void)
 
 			  // Go to intervals
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  curr_state = intervals_countdown;
+				  curr_state = intervals_select_high;
 				  display.change = true;
 			  }
 
@@ -264,6 +268,11 @@ int main(void)
 
 		  case launch: {
 			  display_freeplay();
+
+			  if (set_freeplay_pwm) {
+				  controller_start_launcher(LAUNCH_START_PWM, FREEPLAY_LAUNCH_PWM);
+				  set_freeplay_pwm = false;
+			  }
 
 			  // Launch ball
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
@@ -275,6 +284,8 @@ int main(void)
 
 			  // Exit
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  set_PWM(hbridges + 2, 0);
+				  set_PWM(hbridges + 3, 0);
 				  curr_state = menu_1;
 				  display.change = true;
 			  }
@@ -352,8 +363,8 @@ int main(void)
 			  else if (display.countdown == 1) {
 
 					// Spin launcher to final speed
-					set_PWM(hbridges + 2, -1 * LAUNCH_PWM);
-					set_PWM(hbridges + 3, LAUNCH_PWM);
+					set_PWM(hbridges + 2, -1 * intervals_pwm);
+					set_PWM(hbridges + 3, intervals_pwm);
 					  --display.countdown;
 			  }
 
@@ -403,6 +414,60 @@ int main(void)
 				  }
 			  }
 
+			  break;
+		  }
+
+		  case intervals_select_high: {
+			  display_intervals_high();
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  intervals_pwm = INTERVALS_PWM_HIGH;
+				  curr_state = intervals_countdown;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_3;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  curr_state = intervals_select_medium;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = intervals_select_low;
+			  }
+			  break;
+		  }
+
+		  case intervals_select_medium: {
+			  display_intervals_medium();
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  intervals_pwm = INTERVALS_PWM_MEDIUM;
+				  curr_state = intervals_countdown;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_3;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  curr_state = intervals_select_low;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = intervals_select_high;
+			  }
+			  break;
+		  }
+
+		  case intervals_select_low: {
+			  display_intervals_low();
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  intervals_pwm = INTERVALS_PWM_LOW;
+				  curr_state = intervals_countdown;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_3;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  curr_state = intervals_select_high;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = intervals_select_medium;
+			  }
 			  break;
 		  }
 
