@@ -230,7 +230,7 @@ void display_intervals_medium(void) {
 }
 
 void display_intervals_low(void) {
-	display.top_text = "Select Speed                            ";
+	display.top_text = "Select Range                            ";
 	display.bottom_text = "A: Short Range                          ";
 
 	display_write_string(display.top_text);
