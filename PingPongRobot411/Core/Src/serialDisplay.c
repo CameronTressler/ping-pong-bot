@@ -43,18 +43,20 @@ char countdown_display_table[4][28] = {
 void increment_ball_count(void) {
 
 	// Increment ball count
-	if(display.ball_count != 20)
+	if(display.ball_count != MAX_BALL_COUNT)
 		++display.ball_count;
 
-	// Write to display
-	display.top_text = "";
-	char top_str[50];
-	strcpy(top_str, "Balls: ");
+	if (display.balls_displayed) {
+		// Write to display
+		display.top_text = "";
+		char top_str[50];
+		strcpy(top_str, "Balls: ");
 
-	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
+		display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
 
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+	}
 }
 
 // Decreases ball count by one and updates display
@@ -76,7 +78,7 @@ void decrement_ball_count(void) {
 
 // Resets value of ball count to BALL_COUNT defined in serialDisplay.h
 void display_reset_ball_count(void) {
-	display.ball_count = BALL_COUNT;
+	display.ball_count = MAX_BALL_COUNT;
 
 	// Update display
 	display.top_text = "";

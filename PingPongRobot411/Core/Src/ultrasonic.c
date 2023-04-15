@@ -34,15 +34,15 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 			if (ultra->off_table < 3) {
 				++ultra->off_table;
 
-				if (ultra->off_table == 3) {
-					set_PWM(hbridges + 0, -1 * get_PWM(hbridges + 0));
-					set_PWM(hbridges + 1, -1 * get_PWM(hbridges + 1));
-
-					HAL_Delay(20);
-
-					set_PWM(hbridges + 0, 0.0);
-					set_PWM(hbridges + 1, 0.0);
-				}
+//				if (ultra->off_table == 3) {
+//					set_PWM(hbridges + 0, -1 * get_PWM(hbridges + 0));
+//					set_PWM(hbridges + 1, -1 * get_PWM(hbridges + 1));
+//
+//					HAL_Delay(20);
+//
+//					set_PWM(hbridges + 0, 0.0);
+//					set_PWM(hbridges + 1, 0.0);
+//				}
 			}
 		}
 		else {

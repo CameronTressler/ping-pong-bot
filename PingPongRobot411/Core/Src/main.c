@@ -182,6 +182,7 @@ int main(void)
 	  // State machine
 	  switch(prev_state) {
 		  case welcome: {
+			  display.balls_displayed = false;
 			  display_welcome();
 
 			  // Go to menu
@@ -194,8 +195,9 @@ int main(void)
 		  }
 
 		  case menu_1: {
+			  display.balls_displayed = false;
 			  display_menu_1();
-
+			  controller_drive(&n64_status_curr);
 			  // Go to next menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_2;
@@ -219,8 +221,9 @@ int main(void)
 		  }
 
 		  case menu_2: {
+			  display.balls_displayed = false;
 			  display_menu_2();
-
+			  controller_drive(&n64_status_curr);
 			  // Go to next menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_3;
@@ -243,8 +246,9 @@ int main(void)
 		  }
 
 		  case menu_3: {
+			  display.balls_displayed = false;
 			  display_menu_3();
-
+			  controller_drive(&n64_status_curr);
 			  // Go to next menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_1;
@@ -267,6 +271,7 @@ int main(void)
 		  }
 
 		  case launch: {
+			  display.balls_displayed = true;
 			  display_freeplay();
 
 			  if (set_freeplay_pwm) {
@@ -294,6 +299,7 @@ int main(void)
 		  }
 
 		  case pb_countdown: {
+			  display.balls_displayed = false;
 			  display_pb_countdown();
 
 			  // Delay
@@ -315,6 +321,7 @@ int main(void)
 		  }
 
 		  case pb_record: {
+			  display.balls_displayed = false;
 			  display_playback_record();
 
 			  // TODO: record sequence
@@ -329,6 +336,7 @@ int main(void)
 		  }
 
 		  case pb_relocate: {
+			  display.balls_displayed = false;
 			  display_playback_relocate();
 
 			  // Start playback
@@ -340,6 +348,7 @@ int main(void)
 		  }
 
 		  case pb_begin: {
+			  display.balls_displayed = true;
 			  display_playback_begin();
 
 			  // TODO: playback run and exit when complete
@@ -348,6 +357,7 @@ int main(void)
 		  }
 
 		  case intervals_countdown: {
+			  display.balls_displayed = false;
 			  display_intervals_countdown();
 
 			  // Delay
@@ -385,6 +395,7 @@ int main(void)
 
 
 		  case intervals: {
+			  display.balls_displayed = true;
 			  // TODO: resolve display glitching between "Intervals" and ball count
 			  display_intervals_begin();
 
@@ -418,6 +429,7 @@ int main(void)
 		  }
 
 		  case intervals_select_high: {
+			  display.balls_displayed = false;
 			  display_intervals_high();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_HIGH;
@@ -436,6 +448,7 @@ int main(void)
 		  }
 
 		  case intervals_select_medium: {
+			  display.balls_displayed = false;
 			  display_intervals_medium();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_MEDIUM;
@@ -454,6 +467,7 @@ int main(void)
 		  }
 
 		  case intervals_select_low: {
+			  display.balls_displayed = false;
 			  display_intervals_low();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_LOW;
@@ -857,6 +871,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(N64_receive_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : IR_breakbeam_sensor_Pin */
+  GPIO_InitStruct.Pin = IR_breakbeam_sensor_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(IR_breakbeam_sensor_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : Solenoid_enable__gate0_Pin Hbridge_3_NDIR_Pin Hbridge_3_DIR_Pin Hbridge_2_NDIR_Pin
                            Hbridge_2_DIR_Pin Hbridge_1_NDIR_Pin Hbridge_1_DIR_Pin */
   GPIO_InitStruct.Pin = Solenoid_enable__gate0_Pin|Hbridge_3_NDIR_Pin|Hbridge_3_DIR_Pin|Hbridge_2_NDIR_Pin
@@ -879,6 +899,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

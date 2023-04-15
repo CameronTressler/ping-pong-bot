@@ -8,6 +8,7 @@
 
 typedef struct {
 	int ball_count;
+	bool balls_displayed;
 	int countdown;
 	bool change;
 	char *top_text; // must be 40 characters wide!!
@@ -92,7 +93,7 @@ void display_send_cmd(char cmd);
 #define ON_OFF_CMD 0x08
 
 // Random
-#define BALL_COUNT 20 // idk about this lol
+#define MAX_BALL_COUNT 6 // idk about this lol
 
 
 #endif

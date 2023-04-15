@@ -77,6 +77,9 @@ void Error_Handler(void);
 #define USART_RX_GPIO_Port GPIOA
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+#define IR_breakbeam_sensor_Pin GPIO_PIN_4
+#define IR_breakbeam_sensor_GPIO_Port GPIOC
+#define IR_breakbeam_sensor_EXTI_IRQn EXTI4_IRQn
 #define Solenoid_enable__gate0_Pin GPIO_PIN_5
 #define Solenoid_enable__gate0_GPIO_Port GPIOC
 #define Hbridge_3_NDIR_Pin GPIO_PIN_6

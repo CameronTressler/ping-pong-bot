@@ -16,8 +16,10 @@ void solenoid_init() {
 
 void solenoid_actuate() {
 	// Turn on, wait, and then turn off
+	decrement_ball_count();
 	HAL_GPIO_WritePin(solenoid.GPIOx, solenoid.GPIO_Pin, 1);
 	HAL_Delay(SOL_DELAY);
 	HAL_GPIO_WritePin(solenoid.GPIOx, solenoid.GPIO_Pin, 0);
+
 
 }

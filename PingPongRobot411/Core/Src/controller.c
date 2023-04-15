@@ -13,7 +13,6 @@ extern solenoid_t solenoid;
 // Launch one ball
 void controller_launch_ball() {
 	// Adjust display
-	decrement_ball_count();
 
 	// Actuate solenoid
 	solenoid_actuate();
