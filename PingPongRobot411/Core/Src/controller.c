@@ -24,7 +24,7 @@ void controller_launch_ball() {
 
 	// Actuate solenoid
 	solenoid_actuate();
-	HAL_Delay(LAUNCH_DELAY/3);
+	HAL_Delay(1000);
 
 	// Turn off hbridges
 	set_PWM(hbridges + 2, 0);
@@ -32,7 +32,8 @@ void controller_launch_ball() {
 }
 
 void controller_drive(n64_t *n64_state) {
-	float forward, left;
+	float forward = 0.0;
+	float left = 0.0;
 	  if (n64_state->button_status[N64_DU] == n64_state->button_status[N64_DD]) {
 		  forward = 0;
 	  }
