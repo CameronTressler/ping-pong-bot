@@ -26,6 +26,7 @@
 #include "serialDisplay.h"
 #include "odometry.h"
 #include "controller.h"
+#include "solenoid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -263,7 +264,7 @@ void TIM5_IRQHandler(void)
   /* USER CODE END TIM5_IRQn 0 */
   HAL_TIM_IRQHandler(&htim5);
   /* USER CODE BEGIN TIM5_IRQn 1 */
-  controller_launch_ball();
+  solenoid_actuate();
 
   /* USER CODE END TIM5_IRQn 1 */
 }

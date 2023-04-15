@@ -340,10 +340,25 @@ int main(void)
 			  display_intervals_countdown();
 
 			  // Delay
-			  HAL_Delay(500);
+			  HAL_Delay(2000);
+
+			  if (display.countdown == 2) {
+					// Start launcher
+					set_PWM(hbridges + 2, -1 * LAUNCH_START_PWM);
+					set_PWM(hbridges + 3, LAUNCH_START_PWM);
+					  --display.countdown;
+			  }
+
+			  else if (display.countdown == 1) {
+
+					// Spin launcher to final speed
+					set_PWM(hbridges + 2, -1 * LAUNCH_PWM);
+					set_PWM(hbridges + 3, LAUNCH_PWM);
+					  --display.countdown;
+			  }
 
 			  // If done, exit
-			  if(display.countdown == 0) {
+			  else if(display.countdown == 0) {
 				  display.countdown = 3;
 				  curr_state = intervals;
 				  display.change = true;
@@ -376,6 +391,10 @@ int main(void)
 
 			  // Exit and cancel interrupt
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+					// Stop launcher
+					set_PWM(hbridges + 2, 0.0f);
+					set_PWM(hbridges + 3, 0.0f);
+
 				  curr_state = menu_3;
 				  display.change = true;
 				  htim5_int = 0;

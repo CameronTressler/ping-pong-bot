@@ -14,8 +14,11 @@
 
 // External values
 
-// Defined values
-#define LAUNCH_PWM 0.75f
+// PWM and delay values. Start value is for generating inertia, other values for actual launch.
+#define LAUNCH_START_PWM 0.7f
+#define LAUNCH_PWM 0.59f
+
+#define LAUNCH_START_DELAY 500
 #define LAUNCH_DELAY 3000
 
 // Functions

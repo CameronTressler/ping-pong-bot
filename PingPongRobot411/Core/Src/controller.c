@@ -16,10 +16,18 @@ void controller_launch_ball() {
 	decrement_ball_count();
 
 	// Start launcher
-	set_PWM(hbridges + 2, LAUNCH_PWM);
-	set_PWM(hbridges + 3, -LAUNCH_PWM);
+	set_PWM(hbridges + 2, -1 * LAUNCH_START_PWM);
+	set_PWM(hbridges + 3, LAUNCH_START_PWM);
 
-	// Maybe delay slightly to get up to speed?
+	// Delay slightly to gather inertia.
+	HAL_Delay(LAUNCH_START_DELAY);
+
+
+	// Spin launcher to final speed
+	set_PWM(hbridges + 2, -1 * LAUNCH_PWM);
+	set_PWM(hbridges + 3, LAUNCH_PWM);
+
+	// Delay slightly to get up to speed?
 	HAL_Delay(LAUNCH_DELAY);
 
 	// Actuate solenoid
