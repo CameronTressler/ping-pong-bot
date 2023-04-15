@@ -214,16 +214,16 @@ void display_intervals_countdown(void) {
 }
 
 void display_intervals_high(void) {
-	display.top_text = "Select Speed                            ";
-	display.bottom_text = "A: High Speed                           ";
+	display.top_text = "Select Range                            ";
+	display.bottom_text = "A: Long Range                           ";
 
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
 
 void display_intervals_medium(void) {
-	display.top_text = "Select Speed                            ";
-	display.bottom_text = "A: Medium Speed                         ";
+	display.top_text = "Select Range                            ";
+	display.bottom_text = "A: Medium Range                         ";
 
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
@@ -231,7 +231,7 @@ void display_intervals_medium(void) {
 
 void display_intervals_low(void) {
 	display.top_text = "Select Speed                            ";
-	display.bottom_text = "A: Low Speed                            ";
+	display.bottom_text = "A: Short Range                          ";
 
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
