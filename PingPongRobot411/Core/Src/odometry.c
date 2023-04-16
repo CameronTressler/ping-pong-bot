@@ -45,44 +45,43 @@ int is_imu_calibrated(imu_calib_t* calib) {
 }
 
 void init_odom(odom_t* odom) {
-	odom->x_rel = 0.0;
-	odom->y_rel = 0.0;
+	odom->cur_pos.x = 0.0;
+	odom->cur_pos.y = 0.0;
+	odom->cur_pos.heading = 0.0;
 	odom->velocity = 0.0;
-	odom->heading = 0.0;
 
 	for (int i = 0; i < 4; ++i) {
-		odom->x_corner[i] = 0.0;
-		odom->y_corner[i] = 0.0;
+		odom->corners[i].x = 0.0;
+		odom->corners[i].y = 0.0;
 	}
 
-	odom->calib_age = 0;
 }
 
-void update_position(odom_t* odom, float dist) {
-	odom->x_rel += cos(odom->heading) * dist;
-	odom->y_rel += sin(odom->heading) * dist;
+void update_position(odom_t* odom, double dist) {
+	odom->cur_pos.x += cos(odom->cur_pos.heading) * dist;
+	odom->cur_pos.y += sin(odom->cur_pos.heading) * dist;
 }
 
 void reset_velocity(odom_t* odom, uint8_t num_iterations) {
 	// Backtrack the distance covered in the last num_iterations.
 	if (num_iterations > 0) {
-		float dist = -1 * odom->velocity * num_iterations / IMU_UPDATE_RT;
+		double dist = -1 * odom->velocity * num_iterations / IMU_UPDATE_RT;
 		update_position(odom, dist);
 	}
 
 	odom->velocity = 0.0;
 }
 
-float predict_velocity(float prev_vel, float left_cmd, float right_cmd) {
+double predict_velocity(double prev_vel, double left_cmd, double right_cmd) {
 	// Find the average wheel command.
-	float avg_cmd = (left_cmd + right_cmd) / 2.0;
+	double avg_cmd = (left_cmd + right_cmd) / 2.0;
 
 	// Approximate the velocity we asymptotically would reach.
 	// TODO: Check if positive is forward.
-	float target_vel = avg_cmd * CMD_TO_VEL;
+	double target_vel = avg_cmd * CMD_TO_VEL;
 
 	// Find a predicted velocity, factoring in acceleration.
-	float new_vel;
+	double new_vel;
 	if (target_vel > prev_vel) {
 		if (prev_vel > 0.0) {
 			new_vel = prev_vel + DELTA_ACCEL;
@@ -117,11 +116,12 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	}
 	is_imu_calibrated(&calibration);
 
-	imu_raw_data_t yaw, lin_accel;
+	imu_raw_data_t yaw;
+	// imu_raw_data_t lin_accel;
 
 	// Update heading in radians.
 	i2c_read(IMU_ADDR, EUL_DATA_X, yaw.buf, 2);
-	odom->heading = yaw.data.datum / 900.0;
+	odom->cur_pos.heading = yaw.data.datum / 900.0;
 
 	// If commanded velocity is zero, assume actual velocity is zero.
 //	if (fabs(get_PWM(hbridges[0])) < 0.001 && fabs(get_PWM(hbridges[1])) < 0.001) {
@@ -133,12 +133,12 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	// i2c_read(IMU_ADDR, LIA_DATA_X, lin_accel.buf, 2);
 
 	// Update acceleration in m/s^2.
-	// float accel = lin_accel.data.datum / 101.971621;
-	// float measured_velocity = odom->velocity + (accel / IMU_UPDATE_RT);
+	// double accel = lin_accel.data.datum / 101.971621;
+	// double measured_velocity = odom->velocity + (accel / IMU_UPDATE_RT);
 
 	// Given odom->velocity as our previous velocity, use measured acceleration and predicted
 	// velocity to obtain a new velocity estimate.
-	float predicted_velocity =
+	double predicted_velocity =
 			predict_velocity(odom->velocity, get_PWM(hbridges + 0), get_PWM(hbridges + 1));
 
 	odom->velocity = predicted_velocity;
@@ -163,15 +163,15 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	odom->y_corner[corner_num] = odom->y_rel;
 //}
 //
-//float distance_to_line(odom_t* odom, uint8_t c_1, uint8_t c_2) {
-//	float numerator = fabs(
+//double distance_to_line(odom_t* odom, uint8_t c_1, uint8_t c_2) {
+//	double numerator = fabs(
 //		(odom->x_corner[c_2] - odom->x_corner[c_1]) *
 //		(odom->y_corner[c_1] - odom->y_rel) -
 //		(odom->x_corner[c_1] - odom->x_rel) *
 //		(odom->y_corner[c_2] - odom->y_corner[c_1])
 //	);
 //
-//	float denominator = pow((odom->x_corner[c_2] - odom->x_corner[c_1]), 2);
+//	double denominator = pow((odom->x_corner[c_2] - odom->x_corner[c_1]), 2);
 //
 //
 //}
@@ -184,3 +184,127 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 
 odom_t odometry;
 imu_calib_t calibration;
+
+void reset_path(path_t* path) {
+	path->num_valid = 0;
+	path->current_setpoint = 0;
+	path->pb_state = TURN;
+}
+
+void add_setpoint(odom_t* odom, path_t* path) {
+	path->setpoints[path->num_valid].x = odom->cur_pos.x;
+	path->setpoints[path->num_valid].y = odom->cur_pos.y;
+	path->num_valid = 0;
+}
+
+void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
+	switch(path->pb_state) {
+		case TURN: {
+			// Get angle to point relative to current heading, from 0 to 2PI.
+			double angle_diff = get_angle_to_setpoint(odom, path);
+
+			// If we need to turn counter clockwise.
+			if (
+				(0 < angle_diff && angle_diff < PI / 2) ||
+				(PI < angle_diff && angle_diff < 3 * PI / 2)
+			) {
+				safe_drive(0.0f, 1.0f);
+			}
+			// Else we need to turn clockwise.
+			else {
+				safe_drive(0.0f, -1.0f);
+			}
+
+			// If we are close to angle, move on to DRIVE
+			if (angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD) {
+				path->pb_state = DRIVE;
+			}
+			
+			break;
+		}
+		case DRIVE: {
+			// Get angle to point relative to current heading, from 0 to 2PI.
+			double angle_diff = get_angle_to_setpoint(odom, path);
+
+			double forward_diff = fabs(angle_diff);
+			double backward_diff = fabs(angle_diff - PI);
+
+			// If driving forwards.
+			if (forward_diff < backward_diff) {
+				safe_drive(1.0f, KP_TURN_ADJUST * angle_diff);
+			}
+
+			// If driving backwards.
+			if (forward_diff < backward_diff) {
+				safe_drive(-1.0f, KP_TURN_ADJUST * angle_diff);
+			}
+
+			if (get_distance_to_setpoint(odom, path) > DIST_THRESHOLD) {
+				path->pb_state = LAUNCH;
+			}
+			else if (angle_diff > MAX_ACCEPTABLE_ANGLE) {
+				path->pb_state = TURN;
+			}
+
+			break;
+		}
+		case LAUNCH: {
+			double d_theta = path->setpoints[path->current_setpoint].heading -
+							 odom->cur_pos.heading;
+
+			// If we still need to turn.
+			if (fabs(d_theta) > ANGLE_THRESHOLD) {
+				// If we need to turn counterclockwise.
+				if ((0.0 < d_theta && d_theta < PI) || d_theta < -1 * PI) {
+					safe_drive(0.0f, 1.0f);
+				}
+				// Else we need to turn clockwise.
+				else {
+					safe_drive(0.0f, -1.0f);
+				}
+			}
+			// If we are in position.
+			else {
+				if (display->ball_count > 0) {
+					solenoid_actuate();
+
+					++(path->current_setpoint);
+					if (path->current_setpoint >= path->num_valid) {
+						path->current_setpoint = 0;
+					}
+
+					path->pb_state = TURN;
+				}
+			}
+
+			break;
+		}
+	}
+}
+
+double get_angle_to_setpoint(odom_t* odom, path_t* path) {
+	double d_x = path->setpoints[path->current_setpoint].x - odom->cur_pos.x;
+	double d_y = path->setpoints[path->current_setpoint].y - odom->cur_pos.y;
+
+	double theta = atan(d_y / d_x);
+
+	double angle_diff = theta - odom->cur_pos.heading;
+
+	while (angle_diff < 0.0) {
+		angle_diff += 2 * PI;
+	}
+	while (angle_diff > 2 * PI) {
+		angle_diff -= 2 * PI;
+	}
+
+	return angle_diff;
+}
+
+double get_distance_to_setpoint(odom_t* odom, path_t* path) {
+	double d_x = path->setpoints[path->current_setpoint].x - odom->cur_pos.x;
+	double d_y = path->setpoints[path->current_setpoint].y - odom->cur_pos.y;
+
+	return sqrt(pow(d_x, 2.0) + pow(d_x, 2.0));
+}
+
+path_t path;

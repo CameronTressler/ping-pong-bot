@@ -4,6 +4,12 @@
 #include "main.h"
 #include "ultrasonic.h"
 #include "hbridge.h"
+#include "drive.h"
+#include "serialDisplay.h"
+#include "solenoid.h"
+#include <stdbool.h>
+
+#define PI 3.1415926535
 
 // The IMU communicates over I2C with the following address.
 #define IMU_ADDR 0x28
@@ -34,16 +40,6 @@ int is_imu_calibrated(imu_calib_t* calib);
 #define EUL_DATA_X 0x1A
 #define LIA_DATA_X 0x28
 
-// The ratio of hbridge commands to expected velocity in m/s.
-#define CMD_TO_VEL 0.75
-
-// The expected max amount of change in velocity per iteration.
-#define DELTA_ACCEL 0.02
-#define DELTA_DECCEL 0.05
-
-#define PREDICTED_RATIO 1.0
-
-
 typedef union {
 	struct {
 		uint8_t lsb;
@@ -57,31 +53,75 @@ typedef union {
 	uint8_t buf[2];
 } imu_raw_data_t;
 
+// The ratio of hbridge commands to expected velocity in m/s.
+#define CMD_TO_VEL 0.75
+
+// The expected max amount of change in velocity per iteration.
+#define DELTA_ACCEL 0.02
+#define DELTA_DECCEL 0.05
+
+#define PREDICTED_RATIO 1.0
+
 typedef struct {
-	float x_rel;
-	float y_rel;
+	double x;
+	double y;
+	double heading;
+} coord_t;
 
-	float velocity;
-	float heading;
 
-	float x_corner[4];
-	float y_corner[4];
+typedef struct {
+	coord_t cur_pos;
+	double velocity;
 
-	uint8_t calib_age;
+	coord_t corners[4];
 
 	uint32_t i;
 } odom_t;
 
 #define CALIB_LIFE 100
 
+extern imu_calib_t calibration;
+extern odom_t odometry;
+
+#define MAX_SETPOINTS 10
+
+#define ANGLE_THRESHOLD 0.05
+
+#define KP_TURN_ADJUST 0.5
+#define MAX_ACCEPTABLE_ANGLE 0.5
+#define DIST_THRESHOLD 0.05
+
+typedef enum {
+	TURN,
+	DRIVE,
+	LAUNCH
+} play_back_state_t;
+
+typedef struct {
+	coord_t setpoints[MAX_SETPOINTS];
+	uint8_t num_valid;
+	uint8_t current_setpoint;
+
+	play_back_state_t pb_state;
+
+	float forward_cmd, left_cmd;
+	bool cmds_active;
+} path_t;
+
 void init_odom(odom_t* odom);
-void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras);
+void update_odom(odom_t* odom, hbridge_t* hbridges,ultra_t* ultras);
 
 void calibrate_corner(odom_t* odom, uint8_t corner_num);
 void adjust_off_table(odom_t* odom);
-float predict_velocity(float prev_vel, float left_cmd, float right_cmd);
+double predict_velocity(double prev_vel, double left_cmd, double right_cmd);
 
-extern imu_calib_t calibration;
-extern odom_t odometry;
+void reset_path(path_t* path);
+void add_setpoint(odom_t* odom, path_t* path);
+void set_playback_cmds(odom_t* odom, path_t* path, display_t* display);
+
+double get_angle_to_setpoint(odom_t* odom, path_t* path);
+double get_distance_to_setpoint(odom_t* odom, path_t* path);
+
+extern path_t path;
 
 #endif

@@ -109,10 +109,10 @@ void display_freeplay(void) {
 
 void display_playback_record(void) {
 	if(display.change) {
-		display.bottom_text = "RECORDING...                            ";
-		display.top_text = "STOP: B                                 ";
-		display_write_string(display.bottom_text);
+		display.top_text = "Setpoint: A                             ";
+		display.bottom_text = "Finish: B                               ";
 		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
 		display.change = false;
 	}
 }
@@ -187,19 +187,6 @@ void display_welcome(void) {
 		display.change = false;
 	}
 
-}
-
-void display_pb_countdown(void) {
-	display.top_text = "Play Back                               ";
-	display.bottom_text = "";
-
-	char bottom_str[50];
-	strcpy(bottom_str, "Starting in: ");
-
-	display.bottom_text = strcat(bottom_str, countdown_display_table[display.countdown]);
-
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
 }
 
 void display_intervals_countdown(void) {

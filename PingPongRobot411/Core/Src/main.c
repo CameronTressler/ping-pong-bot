@@ -236,10 +236,13 @@ int main(void)
 				  display.change = true;
 			  }
 
-			  // Go to start playback
+			  // Go to playback record
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  curr_state = pb_countdown;
+				  curr_state = pb_record;
 				  display.change = true;
+
+          // Reset path before creating new setpoints.
+          reset_path(&path);
 			  }
 
 			  break;
@@ -298,60 +301,39 @@ int main(void)
 			  break;
 		  }
 
-		  case pb_countdown: {
-			  display.balls_displayed = false;
-			  display_pb_countdown();
-
-			  // Delay
-			  HAL_Delay(500);
-
-			  // If done, exit
-			  if(display.countdown == 0) {
-				  display.countdown = 3;
-				  curr_state = pb_record;
-				  display.change = true;
-			  }
-
-			  // If not, decrement
-			  else {
-				  --display.countdown;
-			  }
-
-			  break;
-		  }
-
 		  case pb_record: {
 			  display.balls_displayed = false;
 			  display_playback_record();
 
-			  // TODO: record sequence
+			  // A button: drop setpoint
+        if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+          add_setpoint(&odometry, &path);
+        }
 
-			  // Exit
+			  // B button: finish path
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
-				  curr_state = pb_relocate;
+				  curr_state = pb_go;
 				  display.change = true;
+	      
+          // Set commands from path planning to be active.
+          path.cmds_active = true;
 			  }
 
 			  break;
 		  }
 
-		  case pb_relocate: {
-			  display.balls_displayed = false;
-			  display_playback_relocate();
-
-			  // Start playback
-			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_Start)) {
-				  curr_state = pb_begin;
-				  display.change = true;
-			  }
-			  break;
-		  }
-
-		  case pb_begin: {
+		  case pb_go: {
 			  display.balls_displayed = true;
 			  display_playback_begin();
 
-			  // TODO: playback run and exit when complete
+        // B button: exit back to menu
+        if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_2;
+				  display.change = true;
+
+          // Disable commands from path planning.
+          path.cmds_active = false;
+			  }
 
 			  break;
 		  }

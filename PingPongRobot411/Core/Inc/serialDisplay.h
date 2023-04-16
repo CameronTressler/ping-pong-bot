@@ -23,10 +23,8 @@ typedef enum
     menu_2,
     menu_3,
     launch,
-	pb_countdown,
 	pb_record,
-	pb_relocate,
-	pb_begin,
+	pb_go,
 	intervals,
 	intervals_countdown,
 	intervals_select_high,
@@ -50,8 +48,6 @@ void display_reset_ball_count(void);
 // Menu architecture
 void display_playback_record(void);
 
-void display_playback_relocate(void);
-
 void display_playback_begin(void);
 
 void display_freeplay(void);
@@ -73,9 +69,6 @@ void display_intervals_high(void);
 void display_intervals_medium(void);
 
 void display_intervals_low(void);
-
-// Count down display
-void display_pb_countdown(void);
 
 void display_intervals_countdown(void);
 
