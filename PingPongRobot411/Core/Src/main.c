@@ -241,8 +241,8 @@ int main(void)
 				  curr_state = pb_record;
 				  display.change = true;
 
-          // Reset path before creating new setpoints.
-          reset_path(&path);
+				  // Reset path before creating new setpoints.
+				  reset_path(&path);
 			  }
 
 			  break;
@@ -311,14 +311,14 @@ int main(void)
 				  add_setpoint(&odometry, &path);
 				}
 
-					  // B button: finish path
-					  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
-						  curr_state = pb_go;
-						  display.change = true;
+				  // B button: finish path
+				  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+					  curr_state = pb_go;
+					  display.change = true;
 
-				  // Set commands from path planning to be active.
-				  path.cmds_active = true;
-					  }
+					  // Set commands from path planning to be active.
+					  path.cmds_active = true;
+				  }
 
 					  break;
 				  }
@@ -329,15 +329,15 @@ int main(void)
 
 				// B button: exit back to menu
 				if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
-						  curr_state = menu_2;
-						  display.change = true;
+				  curr_state = menu_2;
+				  display.change = true;
 
 				  // Disable commands from path planning.
 				  path.cmds_active = false;
-					  }
+			  }
 
-					  break;
-				  }
+			  break;
+		  }
 
 		  case intervals_countdown: {
 			  display.balls_displayed = false;

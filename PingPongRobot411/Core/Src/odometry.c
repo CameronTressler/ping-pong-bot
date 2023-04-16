@@ -154,7 +154,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 
 	++(odom->i);
 	if (odom->i % 25 == 0) {
-		//printf("%f : %f : %f : %f\n\r", odom->heading, odom->velocity, odom->x_rel, odom->y_rel);
+		printf("%d : %f : %f : %f : %f\n\r", calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
 	}
 }
 
@@ -216,7 +216,8 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			}
 
 			// If we are close to angle, move on to DRIVE
-			if (angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD) {
+			if (angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD ||
+				(PI - ANGLE_THRESHOLD < angle_diff && angle_diff < PI + ANGLE_THRESHOLD)) {
 				path->pb_state = DRIVE;
 			}
 			
@@ -238,7 +239,7 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 				safe_drive(-1.0f, KP_TURN_ADJUST * angle_diff);
 			}
 
-			if (get_distance_to_setpoint(odom, path) > DIST_THRESHOLD) {
+			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
 				path->pb_state = LAUNCH;
 			}
 			else if (angle_diff > MAX_ACCEPTABLE_ANGLE) {
@@ -305,7 +306,7 @@ double get_distance_to_setpoint(odom_t* odom, path_t* path) {
 	double d_x = path->setpoints[path->current_setpoint].x - odom->cur_pos.x;
 	double d_y = path->setpoints[path->current_setpoint].y - odom->cur_pos.y;
 
-	return sqrt(pow(d_x, 2.0) + pow(d_x, 2.0));
+	return sqrt(pow(d_x, 2.0) + pow(d_y, 2.0));
 }
 
 path_t path;
