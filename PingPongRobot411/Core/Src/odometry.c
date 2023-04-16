@@ -233,9 +233,8 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			if (forward_diff < backward_diff) {
 				safe_drive(1.0f, KP_TURN_ADJUST * angle_diff);
 			}
-
 			// If driving backwards.
-			if (forward_diff < backward_diff) {
+			else {
 				safe_drive(-1.0f, KP_TURN_ADJUST * angle_diff);
 			}
 
@@ -265,6 +264,8 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			}
 			// If we are in position.
 			else {
+				safe_drive(0.0f, 0.0f);
+
 				if (display->ball_count > 0) {
 					solenoid_actuate();
 

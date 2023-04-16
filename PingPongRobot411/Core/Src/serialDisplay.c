@@ -117,20 +117,14 @@ void display_playback_record(void) {
 	}
 }
 
-void display_playback_relocate(void) {
-	if(display.change) {
-		display.top_text = "Relocate                                ";
-		display.bottom_text = "START                                   ";
-		display_write_string(display.top_text);
-		display_write_string(display.bottom_text);
-		display.change = false;
-	}
-}
-
 void display_playback_begin(void) {
 	if(display.change) {
-		display.top_text = "Play Back                               ";
-		display.bottom_text = "Get ready!                              ";
+		display.top_text = "";
+		char top_str[50];
+		strcpy(top_str, "Balls: ");
+		display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
+
+		display.bottom_text = "Playing back!                           ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
 		display.change = false;
