@@ -266,7 +266,7 @@ int main(void)
 
 			  // Go to intervals
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  curr_state = intervals_select_high;
+				  curr_state = display.intervals_distance_last;
 				  display.change = true;
 			  }
 
@@ -396,7 +396,8 @@ int main(void)
 				  if(display.interval_delay < 11) {
 					  display.change = true;
 					  display.interval_delay += 2;
-					  display.ARR = display.interval_delay * 10000;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
 				  }
 			  }
 
@@ -404,7 +405,8 @@ int main(void)
 				  if(display.interval_delay > 1) {
 					  display.change = true;
 					  display.interval_delay -= 2;
-					  display.ARR = display.interval_delay * 10000;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
 				  }
 			  }
 
@@ -430,6 +432,7 @@ int main(void)
 			  display_intervals_high();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_HIGH;
+				  display.intervals_distance_last = intervals_select_high;
 				  curr_state = intervals_countdown;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
@@ -452,6 +455,7 @@ int main(void)
 			  display_intervals_medium();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_MEDIUM;
+				  display.intervals_distance_last = intervals_select_medium;
 				  curr_state = intervals_countdown;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
@@ -474,6 +478,7 @@ int main(void)
 			  display_intervals_low();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_LOW;
+				  display.intervals_distance_last = intervals_select_low;
 				  curr_state = intervals_countdown;
 
 			  }

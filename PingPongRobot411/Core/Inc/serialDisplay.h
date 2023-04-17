@@ -8,19 +8,8 @@
 
 #define TIM5_OFFSET 0x40000C00
 
+#define TIM_COUNT_OFFSET 0x24
 #define TIM_ARR_OFFSET 0x2C
-
-typedef struct {
-	int ball_count;
-	int interval_delay;
-	uint32_t * ARR;
-	bool balls_displayed;
-	int countdown;
-	bool change;
-	char *top_text; // must be 40 characters wide!!
-	char *bottom_text; // must be 40 characters wide!!
-
-} display_t;
 
 typedef enum
 {
@@ -37,6 +26,22 @@ typedef enum
 	intervals_select_medium,
 	intervals_select_low
 } display_state;
+
+typedef struct {
+	int ball_count;
+	int interval_delay;
+	uint32_t * interval_count;
+	uint32_t * ARR;
+	bool balls_displayed;
+	int countdown;
+	bool change;
+	char *top_text; // must be 40 characters wide!!
+	char *bottom_text; // must be 40 characters wide!!
+	display_state intervals_distance_last;
+
+} display_t;
+
+
 
 extern I2C_HandleTypeDef hi2c3;
 extern display_t display;

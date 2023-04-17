@@ -254,6 +254,8 @@ void display_init (void)
 	display.change = true;
 	display.interval_delay = 5;
 	display.ARR = (uint32_t*)(TIM5_OFFSET + TIM_ARR_OFFSET);
+	display.interval_count = (uint32_t*)(TIM5_OFFSET + TIM_COUNT_OFFSET);
+	display.intervals_distance_last = intervals_select_high;
 
 	// 4 bit initialisation
 	HAL_Delay(50);  // wait for >40ms
