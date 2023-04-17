@@ -171,7 +171,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	}
 
 	++(odom->i);
-	if (odom->i % 25 == 0) {
+	if (odom->i % 100 == 0) {
 		printf("%d : %f : %f : %f : %f\n\r", calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
 	}
 }

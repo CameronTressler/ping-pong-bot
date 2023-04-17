@@ -23,7 +23,6 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 		// Reset count so we now assume an echo has started but not finished,
 		// and count is low enough to be reset on the next trigger.
 		ultra->count_of_echo_start = 1;
-		// printf("Error state\n\r");
 	}
 
 	// Else we're at the end of an echo.
@@ -34,6 +33,7 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 			if (ultra->off_table < DEFINITELY_OFF_TABLE_THRESHOLD) {
 				++ultra->off_table;
 
+				// TODO: Consider adding forced deceleration in.
 //				if (ultra->off_table == 3) {
 //					set_PWM(hbridges + 0, -1 * get_PWM(hbridges + 0));
 //					set_PWM(hbridges + 1, -1 * get_PWM(hbridges + 1));
@@ -53,7 +53,6 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 
 		// Reset count for beginning of next echo.
 		ultra->count_of_echo_start = 0;
-		// printf("%d\n\r", elapsed_counts);
 	}
 }
 
