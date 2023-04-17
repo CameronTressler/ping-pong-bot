@@ -23,7 +23,7 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 		// Reset count so we now assume an echo has started but not finished,
 		// and count is low enough to be reset on the next trigger.
 		ultra->count_of_echo_start = 1;
-		printf("Error state\n\r");
+		// printf("Error state\n\r");
 	}
 
 	// Else we're at the end of an echo.
@@ -31,7 +31,7 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 		unsigned int elapsed_counts = current_count - ultra->count_of_echo_start;
 
 		if (get_ultra_distance_in(elapsed_counts) > MAX_ON_TABLE_IN) {
-			if (ultra->off_table < 3) {
+			if (ultra->off_table < DEFINITELY_OFF_TABLE_THRESHOLD) {
 				++ultra->off_table;
 
 //				if (ultra->off_table == 3) {
@@ -53,19 +53,25 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 
 		// Reset count for beginning of next echo.
 		ultra->count_of_echo_start = 0;
-		printf("%d\n\r", elapsed_counts);
+		// printf("%d\n\r", elapsed_counts);
 	}
 }
 
-unsigned int is_off_table(ultra_t* ultra) {
-	if (ultra->off_table >= 2) {
-		return 1;
+bool is_off_table(ultra_t* ultra) {
+	if (ultra->off_table >= OFF_TABLE_THRESHOLD) {
+		return true;
 	}
-	return 0;
+	return false;
 }
 
-unsigned int ultras_off_table() {
-	return is_off_table(ultras + FRONT_ULTRA) || is_off_table(ultras + REAR_ULTRA);
+bool ultras_definitely_off_table() {
+	for (uint8_t i = 0; i < NUM_ULTRAS; ++i) {
+		if (ultras[i].off_table >= DEFINITELY_OFF_TABLE_THRESHOLD) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 ultra_t ultras[NUM_ULTRAS];
