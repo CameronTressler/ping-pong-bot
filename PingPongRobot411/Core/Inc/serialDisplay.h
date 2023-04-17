@@ -30,6 +30,8 @@ typedef enum
 typedef struct {
 	int ball_count;
 	int interval_delay;
+	int speed;
+	float last_pwm;
 	uint32_t * interval_count;
 	uint32_t * ARR;
 	bool balls_displayed;
@@ -82,6 +84,8 @@ void display_intervals_medium(void);
 void display_intervals_low(void);
 
 void display_intervals_countdown(void);
+
+void display_freeplay_speed(void);
 
 // Initialization and commands
 void display_init(void);

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "main.h"
+#include "controller.h"
 
 display_t display;
 
@@ -90,6 +91,17 @@ void display_reset_ball_count(void) {
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 
+}
+
+void display_freeplay_speed(void) {
+	display.top_text = "";
+
+	char top_str[50];
+	strcpy(top_str, "Speed: ");
+
+	display.top_text = strcat(top_str, ball_display_table[display.speed]);
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
 void display_freeplay(void) {
@@ -251,6 +263,8 @@ void display_send_data(char data) {
 void display_init (void)
 {
 	display.countdown = 3;
+	display.speed = 4;
+	display.last_pwm = FREEPLAY_LAUNCH_PWM;
 	display.change = true;
 	display.interval_delay = 5;
 	display.ARR = (uint32_t*)(TIM5_OFFSET + TIM_ARR_OFFSET);

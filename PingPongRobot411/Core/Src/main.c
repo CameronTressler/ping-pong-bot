@@ -278,7 +278,7 @@ int main(void)
 			  display_freeplay();
 
 			  if (set_freeplay_pwm) {
-				  controller_start_launcher(LAUNCH_START_PWM, FREEPLAY_LAUNCH_PWM);
+				  controller_start_launcher(LAUNCH_START_PWM, display.last_pwm);
 				  set_freeplay_pwm = false;
 			  }
 
@@ -288,6 +288,60 @@ int main(void)
 			  }
 			  else {
 				  controller_drive(&n64_status_curr);
+			  }
+
+			  // Increment and decrement speed
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  if (display.speed < 4) {
+					  display.speed++;
+				  } else {
+					  display.speed = 1;
+				  }
+			  }
+
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  if (display.speed > 1) {
+					  display.speed--;
+				  } else {
+					  display.speed = 4;
+				  }
+			  }
+
+			  // only adjust if speed has changed
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU) ||
+					  n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD) ) {
+
+				  // update display
+				  display_freeplay_speed();
+
+				  // Decide speed
+				  switch(display.speed) {
+					  case 4: {
+						  controller_adjust_launch_speed(FREEPLAY_LAUNCH_PWM);
+						  display.last_pwm = FREEPLAY_LAUNCH_PWM;
+						  break;
+					  }
+					  case 3: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_HIGH);
+						  display.last_pwm = INTERVALS_PWM_HIGH;
+						  break;
+					  }
+					  case 2: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_MEDIUM);
+						  display.last_pwm = INTERVALS_PWM_MEDIUM;
+						  break;
+					  }
+					  case 1: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_LOW);
+						  display.last_pwm = INTERVALS_PWM_LOW;
+						  break;
+					  }
+				  }
+			  }
+
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+
 			  }
 
 			  // Exit
