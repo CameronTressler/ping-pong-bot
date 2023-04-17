@@ -385,13 +385,28 @@ int main(void)
 			  if(!htim5_int){
 				  htim5_int = 1;
 
-				  // Start interrupt with default of 2 seconds
+				  // Start interrupt with default of 5 seconds
 				  if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK ) {
 					  Error_Handler();
 				  }
 			  }
 
-			  // TODO: Maybe have functionality to adjust timing?
+			  // Increment and decrement interrupt speed by two seconds 1-11 seconds
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  if(display.interval_delay < 11) {
+					  display.change = true;
+					  display.interval_delay += 2;
+					  display.ARR = display.interval_delay * 10000;
+				  }
+			  }
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  if(display.interval_delay > 1) {
+					  display.change = true;
+					  display.interval_delay -= 2;
+					  display.ARR = display.interval_delay * 10000;
+				  }
+			  }
 
 			  // Exit and cancel interrupt
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
@@ -419,12 +434,15 @@ int main(void)
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  display.change = true;
 				  curr_state = intervals_select_medium;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = intervals_select_low;
+				  display.change = true;
 			  }
 			  break;
 		  }
@@ -438,12 +456,15 @@ int main(void)
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = intervals_select_low;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = intervals_select_high;
+				  display.change = true;
 			  }
 			  break;
 		  }
@@ -454,15 +475,19 @@ int main(void)
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_LOW;
 				  curr_state = intervals_countdown;
+
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = intervals_select_high;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = intervals_select_medium;
+				  display.change = true;
 			  }
 			  break;
 		  }

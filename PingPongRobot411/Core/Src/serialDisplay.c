@@ -133,7 +133,10 @@ void display_playback_begin(void) {
 
 void display_intervals_begin(void) {
 	if(display.change) {
-		display.top_text = "Intervals                               ";
+		display.top_text = "";
+		char top_str[50];
+		strcpy(top_str, "Delay: ");
+		display.top_text = strcat(top_str, ball_display_table[display.interval_delay]);
 		display.bottom_text = "STOP: B                                 ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
@@ -197,27 +200,36 @@ void display_intervals_countdown(void) {
 }
 
 void display_intervals_high(void) {
-	display.top_text = "Select Range                            ";
-	display.bottom_text = "A: Long Range                           ";
+	if(display.change) {
+		display.top_text = "Select Range                            ";
+		display.bottom_text = "A: Long Range                           ";
 
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_intervals_medium(void) {
-	display.top_text = "Select Range                            ";
-	display.bottom_text = "A: Medium Range                         ";
+	if(display.change) {
+		display.top_text = "Select Range                            ";
+		display.bottom_text = "A: Medium Range                         ";
 
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 void display_intervals_low(void) {
-	display.top_text = "Select Range                            ";
-	display.bottom_text = "A: Short Range                          ";
+	if(display.change) {
+		display.top_text = "Select Range                            ";
+		display.bottom_text = "A: Short Range                          ";
 
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
 }
 
 
@@ -240,6 +252,8 @@ void display_init (void)
 {
 	display.countdown = 3;
 	display.change = true;
+	display.interval_delay = 5;
+	display.ARR = (uint32_t*)(TIM5_OFFSET + TIM_ARR_OFFSET);
 
 	// 4 bit initialisation
 	HAL_Delay(50);  // wait for >40ms

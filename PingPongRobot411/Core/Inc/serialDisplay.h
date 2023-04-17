@@ -6,8 +6,14 @@
 
 #include "main.h"
 
+#define TIM5_OFFSET 0x40000C00
+
+#define TIM_ARR_OFFSET 0x2C
+
 typedef struct {
 	int ball_count;
+	int interval_delay;
+	uint32_t * ARR;
 	bool balls_displayed;
 	int countdown;
 	bool change;
