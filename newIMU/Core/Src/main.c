@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdint.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -31,6 +32,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define IMU_ADDR 0x68
+#define ACCEL_X_H 0x45
+#define ACCEL_CONFIG 0x14
 
 /* USER CODE END PD */
 
@@ -52,10 +56,24 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
+double get_accel(uint8_t raw_data) {
+	return raw_data / (16 * 9.8);
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+typedef union {
+	typedef struct {
+		uint16_t x;
+		uint16_t y;
+		uint16_t z;
+	} xyz_data;
+
+	xyz_data data;
+
+	uint8_t buf[6];
+} accel_data;
 
 /* USER CODE END 0 */
 
@@ -90,6 +108,11 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  accel_data rx_data;
+
+  uint8_t config_msg = 0b110;
+
+  i2c_write(IMU_ADDR, ACCEL_CONFIG, &config_msg, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -97,6 +120,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  i2c_read(IMU_ADDR, ACCEL_X_H, rx_data.buf, 6);
+	  printf("X: %.2f\tY: %.2f\tZ: %.2f\n\r", get_accel(rx_data.data.x),
+			  	  	  	  	  	  	  	  	  get_accel(rx_data.data.y),
+											  get_accel(rx_data.data.z));
+
+	  HAL_Delay(50);
 
     /* USER CODE BEGIN 3 */
   }
