@@ -77,34 +77,38 @@ double predict_velocity(double prev_vel, double left_cmd, double right_cmd) {
 	double avg_cmd = (left_cmd + right_cmd) / 2.0;
 
 	// Approximate the velocity we asymptotically would reach.
-	// TODO: Check if positive is forward.
-	double target_vel = avg_cmd * CMD_TO_VEL;
+	double target_vel = avg_cmd * MAX_THEORETICAL_SPEED;
 
 	// Find a predicted velocity, factoring in acceleration.
 	double new_vel;
 	if (target_vel > prev_vel) {
+		// If accelerating.
 		if (prev_vel > 0.0) {
-			new_vel = prev_vel + DELTA_ACCEL;
+			new_vel = prev_vel + (ACCEL_RATIO * (target_vel - prev_vel));
 		}
+		// If decelerating.
 		else {
 			new_vel = prev_vel + DELTA_DECCEL;
-		}
 
-		if (new_vel > target_vel) {
-			return target_vel;
+			if (new_vel > target_vel) {
+				return target_vel;
+			}
 		}
 	}
 	else {
+		// If accelerating.
 		if (prev_vel < 0.0) {
-			new_vel = prev_vel - DELTA_ACCEL;
+			new_vel = prev_vel - (ACCEL_RATIO * (prev_vel - target_vel));
 		}
+		// If decelerating.
 		else {
 			new_vel = prev_vel - DELTA_DECCEL;
+
+			if (new_vel < target_vel) {
+				return target_vel;
+			}
 		}
 
-		if (new_vel < target_vel) {
-			return target_vel;
-		}
 	}
 
 	return new_vel;
@@ -117,45 +121,45 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	is_imu_calibrated(&calibration);
 
 	imu_raw_data_t yaw;
-	imu_raw_data_t lin_accel;
+	// imu_raw_data_t lin_accel;
 
 	// If commanded velocity is zero, assume actual velocity is zero.
-	if (fabs(get_PWM(hbridges + 0)) < 0.001 && fabs(get_PWM(hbridges + 1)) < 0.001) {
-		if (odom->zero_count < ZERO_THRESHOLD) {
-			++(odom->zero_count);
-		}
-	}
-	else {
-		odom->zero_count = 0;
-	}
-
-	if (odom->zero_count >= ZERO_THRESHOLD) {
-		reset_velocity(odom, 0);
-		++(odom->i);
-		if (odom->i % 25 == 0) {
-			printf("%d : %f : %f : %f : %f\n\r", calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
-		}
-		return;
-	}
+//	if (fabs(get_PWM(hbridges + 0)) < 0.001 && fabs(get_PWM(hbridges + 1)) < 0.001) {
+//		if (odom->zero_count < ZERO_THRESHOLD) {
+//			++(odom->zero_count);
+//		}
+//	}
+//	else {
+//		odom->zero_count = 0;
+//	}
+//
+//	if (odom->zero_count >= ZERO_THRESHOLD) {
+//		reset_velocity(odom, 0);
+//		++(odom->i);
+//		if (odom->i % 25 == 0) {
+//			printf("%d : %f : %f : %f : %f\n\r", calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
+//		}
+//		return;
+//	}
 
 	// Update heading in radians.
 	i2c_read(IMU_ADDR, EUL_DATA_X, yaw.buf, 2);
 	odom->cur_pos.heading = yaw.data.datum / 900.0;
 
 	// Get acceleration.
-	i2c_read(IMU_ADDR, LIA_DATA_X, lin_accel.buf, 2);
+	// i2c_read(IMU_ADDR, LIA_DATA_X, lin_accel.buf, 2);
 
 	// Update acceleration in m/s^2.
-	double accel = lin_accel.data.datum / 101.971621;
-	double measured_velocity = odom->velocity + (accel / IMU_UPDATE_RT);
+	// double accel = lin_accel.data.datum / 101.971621;
+	// double measured_velocity = odom->velocity + (accel / IMU_UPDATE_RT);
 
 	// Given odom->velocity as our previous velocity, use measured acceleration and predicted
 	// velocity to obtain a new velocity estimate.
-	// double predicted_velocity =
-	//		predict_velocity(odom->velocity, get_PWM(hbridges + 0), get_PWM(hbridges + 1));
+	 double predicted_velocity =
+			predict_velocity(odom->velocity, get_PWM(hbridges + 0), get_PWM(hbridges + 1));
 
-	odom->velocity = measured_velocity;
-	// odom->velocity = predicted_velocity;
+	// odom->velocity = measured_velocity;
+	odom->velocity = predicted_velocity;
 //	odom->velocity = (PREDICTED_RATIO * predicted_velocity) +
 //			   	     ((1 - PREDICTED_RATIO) * measured_velocity);
 
@@ -212,6 +216,11 @@ void add_setpoint(odom_t* odom, path_t* path) {
 	++path->num_valid;
 }
 
+bool facing_target(double angle_diff) {
+	return angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD ||
+		   (PI - ANGLE_THRESHOLD < angle_diff && angle_diff < PI + ANGLE_THRESHOLD);
+}
+
 void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 	switch(path->pb_state) {
 		case TURN: {
@@ -219,17 +228,23 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
 			// If we are close to angle, move on to DRIVE
-			if (angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD) {
+			if (facing_target(angle_diff)) {
 				safe_drive(0, 0);
 				path->pb_state = DRIVE;
+
+				printf("Transitioning from TURN to DRIVE\n\r");
 			}
+
 			// If we need to turn clockwise.
-			else if (0 <= angle_diff && angle_diff < PI) {
-				safe_drive(0.0f, -0.7f);
+			else if (
+				(0 < angle_diff && angle_diff < PI / 2) ||
+				(PI < angle_diff && angle_diff < 3 * PI / 2)
+			) {
+				safe_drive(0.0f, -0.75f);
 			}
-			// Else we need to turn counter clockwise (????).
+			// Else we need to turn counter clockwise.
 			else {
-				safe_drive(0.0f, 0.7f);
+				safe_drive(0.0f, 0.75f);
 			}
 
 			
@@ -239,16 +254,30 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			// Get angle to point relative to current heading, from 0 to 2PI.
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
-			safe_drive(0.5, KP_TURN_ADJUST * angle_diff);
+			double forward_diff = fabs(angle_diff);
+			double backward_diff = fabs(angle_diff - PI);
+
+			// If driving forwards.
+			if (forward_diff < backward_diff) {
+				safe_drive(0.5f, KP_TURN_ADJUST * angle_diff);
+			}
+			// If driving backwards.
+			else {
+				safe_drive(-0.5f, KP_TURN_ADJUST * angle_diff);
+			}
 
 			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
 				safe_drive(0, 0);
 				path->pb_state = LAUNCH;
+
+				printf("Transitioning from DRIVE to LAUNCH\n\r");
 			}
-			else if (!(angle_diff < MAX_ACCEPTABLE_ANGLE ||
-					   angle_diff > 2 * PI - MAX_ACCEPTABLE_ANGLE)) {
+			else if
+			(!facing_target(angle_diff)) {
 				safe_drive(0, 0);
 				path->pb_state = TURN;
+
+				printf("Transitioning from DRIVE to TURN\n\r");
 			}
 
 			break;
@@ -281,6 +310,7 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 					}
 
 					path->pb_state = TURN;
+					printf("Transitioning from LAUNCH to TURN\n\r");
 				}
 			}
 
