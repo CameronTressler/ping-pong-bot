@@ -89,7 +89,7 @@ extern odom_t odometry;
 
 #define ANGLE_THRESHOLD 0.2
 
-#define KP_TURN_ADJUST 0.1
+#define KP_TURN_ADJUST 0.05
 #define MAX_ACCEPTABLE_ANGLE 0.5
 #define DIST_THRESHOLD 0.05
 
@@ -120,7 +120,8 @@ double predict_velocity(double prev_vel, double left_cmd, double right_cmd);
 void reset_path(path_t* path);
 void add_setpoint(odom_t* odom, path_t* path);
 void set_playback_cmds(odom_t* odom, path_t* path, display_t* display);
-bool facing_target(double angle_diff);
+bool facing_target(double angle_diff, double threshold);
+double convert_to_std_rad(double angle);
 double get_angle_to_setpoint(odom_t* odom, path_t* path);
 double get_distance_to_setpoint(odom_t* odom, path_t* path);
 

@@ -216,9 +216,9 @@ void add_setpoint(odom_t* odom, path_t* path) {
 	++path->num_valid;
 }
 
-bool facing_target(double angle_diff) {
-	return angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD ||
-		   (PI - ANGLE_THRESHOLD < angle_diff && angle_diff < PI + ANGLE_THRESHOLD);
+bool facing_target(double angle_diff, double threshold) {
+	return angle_diff < threshold || angle_diff > 2 * PI - threshold ||
+		   (PI - threshold < angle_diff && angle_diff < PI + threshold);
 }
 
 void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
@@ -228,7 +228,7 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
 			// If we are close to angle, move on to DRIVE
-			if (facing_target(angle_diff)) {
+			if (facing_target(angle_diff, 0.2)) {
 				safe_drive(0, 0);
 				path->pb_state = DRIVE;
 
@@ -273,7 +273,7 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 				printf("Transitioning from DRIVE to LAUNCH\n\r");
 			}
 			else if
-			(!facing_target(angle_diff)) {
+			(!facing_target(angle_diff, 0.5)) {
 				safe_drive(0, 0);
 				path->pb_state = TURN;
 
@@ -283,8 +283,8 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			break;
 		}
 		case LAUNCH: {
-			double d_theta = path->setpoints[path->current_setpoint].heading -
-							 odom->cur_pos.heading;
+			double d_theta = convert_to_std_rad(path->setpoints[path->current_setpoint].heading -
+							 	 	 	 	 	odom->cur_pos.heading);
 
 			// If we still need to turn.
 			if (fabs(d_theta) > ANGLE_THRESHOLD) {
@@ -331,14 +331,7 @@ double get_angle_to_setpoint(odom_t* odom, path_t* path) {
 
 	double angle_diff = theta - odom->cur_pos.heading;
 
-	while (angle_diff < 0.0) {
-		angle_diff += 2 * PI;
-	}
-	while (angle_diff > 2 * PI) {
-		angle_diff -= 2 * PI;
-	}
-
-	return angle_diff;
+	return convert_to_std_rad(angle_diff);
 }
 
 double get_distance_to_setpoint(odom_t* odom, path_t* path) {
@@ -346,6 +339,17 @@ double get_distance_to_setpoint(odom_t* odom, path_t* path) {
 	double d_y = path->setpoints[path->current_setpoint].y - odom->cur_pos.y;
 
 	return sqrt(pow(d_x, 2.0) + pow(d_y, 2.0));
+}
+
+double convert_to_std_rad(double angle) {
+	while (angle < 0.0) {
+		angle += 2 * PI;
+	}
+	while (angle > 2 * PI) {
+		angle -= 2 * PI;
+	}
+
+	return angle;
 }
 
 path_t path;
