@@ -266,7 +266,7 @@ int main(void)
 
 			  // Go to intervals
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  curr_state = intervals_select_high;
+				  curr_state = display.intervals_distance_last;
 				  display.change = true;
 			  }
 
@@ -278,7 +278,7 @@ int main(void)
 			  display_freeplay();
 
 			  if (set_freeplay_pwm) {
-				  controller_start_launcher(LAUNCH_START_PWM, FREEPLAY_LAUNCH_PWM);
+				  controller_start_launcher(LAUNCH_START_PWM, display.last_pwm);
 				  set_freeplay_pwm = false;
 			  }
 
@@ -288,6 +288,60 @@ int main(void)
 			  }
 			  else {
 				  controller_drive(&n64_status_curr);
+			  }
+
+			  // Increment and decrement speed
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  if (display.speed < 4) {
+					  display.speed++;
+				  } else {
+					  display.speed = 1;
+				  }
+			  }
+
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  if (display.speed > 1) {
+					  display.speed--;
+				  } else {
+					  display.speed = 4;
+				  }
+			  }
+
+			  // only adjust if speed has changed
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU) ||
+					  n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD) ) {
+
+				  // update display
+				  display_freeplay_speed();
+
+				  // Decide speed
+				  switch(display.speed) {
+					  case 4: {
+						  controller_adjust_launch_speed(FREEPLAY_LAUNCH_PWM);
+						  display.last_pwm = FREEPLAY_LAUNCH_PWM;
+						  break;
+					  }
+					  case 3: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_HIGH);
+						  display.last_pwm = INTERVALS_PWM_HIGH;
+						  break;
+					  }
+					  case 2: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_MEDIUM);
+						  display.last_pwm = INTERVALS_PWM_MEDIUM;
+						  break;
+					  }
+					  case 1: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_LOW);
+						  display.last_pwm = INTERVALS_PWM_LOW;
+						  break;
+					  }
+				  }
+			  }
+
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+
 			  }
 
 			  // Exit
@@ -385,13 +439,30 @@ int main(void)
 			  if(!htim5_int){
 				  htim5_int = 1;
 
-				  // Start interrupt with default of 2 seconds
+				  // Start interrupt with default of 5 seconds
 				  if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK ) {
 					  Error_Handler();
 				  }
 			  }
 
-			  // TODO: Maybe have functionality to adjust timing?
+			  // Increment and decrement interrupt speed by two seconds 1-11 seconds
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  if(display.interval_delay < 11) {
+					  display.change = true;
+					  display.interval_delay += 2;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
+				  }
+			  }
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  if(display.interval_delay > 1) {
+					  display.change = true;
+					  display.interval_delay -= 2;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
+				  }
+			  }
 
 			  // Exit and cancel interrupt
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
@@ -415,16 +486,20 @@ int main(void)
 			  display_intervals_high();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_HIGH;
+				  display.intervals_distance_last = intervals_select_high;
 				  curr_state = intervals_countdown;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  display.change = true;
 				  curr_state = intervals_select_medium;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = intervals_select_low;
+				  display.change = true;
 			  }
 			  break;
 		  }
@@ -434,16 +509,20 @@ int main(void)
 			  display_intervals_medium();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_MEDIUM;
+				  display.intervals_distance_last = intervals_select_medium;
 				  curr_state = intervals_countdown;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = intervals_select_low;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = intervals_select_high;
+				  display.change = true;
 			  }
 			  break;
 		  }
@@ -453,16 +532,21 @@ int main(void)
 			  display_intervals_low();
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  intervals_pwm = INTERVALS_PWM_LOW;
+				  display.intervals_distance_last = intervals_select_low;
 				  curr_state = intervals_countdown;
+
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_3;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = intervals_select_high;
+				  display.change = true;
 			  }
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
 				  curr_state = intervals_select_medium;
+				  display.change = true;
 			  }
 			  break;
 		  }

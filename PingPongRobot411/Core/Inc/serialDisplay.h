@@ -6,15 +6,10 @@
 
 #include "main.h"
 
-typedef struct {
-	int ball_count;
-	bool balls_displayed;
-	int countdown;
-	bool change;
-	char *top_text; // must be 40 characters wide!!
-	char *bottom_text; // must be 40 characters wide!!
+#define TIM5_OFFSET 0x40000C00
 
-} display_t;
+#define TIM_COUNT_OFFSET 0x24
+#define TIM_ARR_OFFSET 0x2C
 
 typedef enum
 {
@@ -31,6 +26,24 @@ typedef enum
 	intervals_select_medium,
 	intervals_select_low
 } display_state;
+
+typedef struct {
+	int ball_count;
+	int interval_delay;
+	int speed;
+	float last_pwm;
+	uint32_t * interval_count;
+	uint32_t * ARR;
+	bool balls_displayed;
+	int countdown;
+	bool change;
+	char *top_text; // must be 40 characters wide!!
+	char *bottom_text; // must be 40 characters wide!!
+	display_state intervals_distance_last;
+
+} display_t;
+
+
 
 extern I2C_HandleTypeDef hi2c3;
 extern display_t display;
@@ -71,6 +84,8 @@ void display_intervals_medium(void);
 void display_intervals_low(void);
 
 void display_intervals_countdown(void);
+
+void display_freeplay_speed(void);
 
 // Initialization and commands
 void display_init(void);

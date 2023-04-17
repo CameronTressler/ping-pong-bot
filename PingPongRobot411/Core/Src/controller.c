@@ -12,8 +12,6 @@ extern solenoid_t solenoid;
 
 // Launch one ball
 void controller_launch_ball() {
-	// Adjust display
-
 	// Actuate solenoid
 	solenoid_actuate();
 	HAL_Delay(1000);
@@ -35,6 +33,15 @@ void controller_start_launcher(float start_pwm, float launch_pwm) {
 
 		// Delay slightly to get up to speed?
 		HAL_Delay(LAUNCH_DELAY);
+}
+
+void controller_adjust_launch_speed(float launch_pwm) {
+	// Spin launcher to final speed
+	set_PWM(hbridges + 2, -1 * launch_pwm);
+	set_PWM(hbridges + 3, launch_pwm);
+
+	// Delay slightly to get up to speed?
+	HAL_Delay(LAUNCH_DELAY);
 }
 
 void controller_drive(n64_t *n64_state) {

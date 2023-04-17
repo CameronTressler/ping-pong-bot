@@ -28,6 +28,7 @@
 // Functions
 void controller_launch_ball();
 
+void controller_adjust_launch_speed(float launch_pwm);
 
 void controller_start_launcher(float start_pwm, float launch_pwm);
 
