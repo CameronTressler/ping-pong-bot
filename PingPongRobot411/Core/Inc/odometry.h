@@ -11,34 +11,47 @@
 
 #define PI 3.1415926535
 
-// The IMU communicates over I2C with the following address.
-#define IMU_ADDR 0x28
+///////////////////////////////////////////////////////////////////////////////
+// ------- BNO ----------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+// The BNO communicates over I2C with the following address.
+#define BNO_ADDR 0x28
 
 // Register address for setting power mode.
-#define PWR_MODE_REG 0x3E
+#define BNO_PWR_MODE_REG 0x3E
 
 // Register address for setting operation mode.
-#define OPR_MODE_REG 0x3D
+#define BNO_OPR_MODE_REG 0x3D
 
 // Register address for setting units of measurements.
-#define UNIT_SEL_REG 0x3B
+#define BNO_UNIT_SEL_REG 0x3B
 
 // Register for reading calibration status
-#define CALIB_STAT_REG 0x35
+#define BNO_CALIB_STAT_REG 0x35
 
 typedef struct {
 	uint8_t data;
 	uint8_t age;
 } imu_calib_t;
 
-void init_imu();
-int is_imu_calibrated(imu_calib_t* calib);
-
-// Output rate for fusion data is 100Hz.
-#define IMU_UPDATE_RT 50.0
+void init_bno();
+int is_bno_calibrated(imu_calib_t* calib);
 
 #define EUL_DATA_X 0x1A
 #define LIA_DATA_X 0x28
+
+///////////////////////////////////////////////////////////////////////////////
+// ------- ADXL ---------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ------- ODOM ---------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+// Output rate for fusion data is 100Hz.
+#define ODOM_UPDATE_RT 50.0
 
 typedef union {
 	struct {
@@ -77,12 +90,14 @@ typedef struct {
 
 	uint32_t i;
 	uint8_t zero_count;
+
+	bool bno_calibrated;
 } odom_t;
 
 #define CALIB_LIFE 100
 #define ZERO_THRESHOLD 1
 
-extern imu_calib_t calibration;
+extern imu_calib_t bno_calibration;
 extern odom_t odometry;
 
 #define MAX_SETPOINTS 10

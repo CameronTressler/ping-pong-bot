@@ -145,7 +145,7 @@ int main(void)
   n64_read(N64_RESET, NULL);
 
   init_odom(&odometry);
-  init_imu();
+  init_bno();
 
   // Start IMU timer
   HAL_TIM_Base_Start_IT(&htim10);

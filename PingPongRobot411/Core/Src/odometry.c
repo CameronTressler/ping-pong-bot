@@ -5,32 +5,30 @@
 #include "stdio.h"
 #include "util.h"
 
-void init_imu() {
+void init_bno() {
 	// Set to config operational mode.
-	i2c_mask_write(IMU_ADDR, OPR_MODE_REG, 4, 0, 0b0000);
+	i2c_mask_write(BNO_ADDR, BNO_OPR_MODE_REG, 4, 0, 0b0000);
 	HAL_Delay(20);
 
 	// Set to normal power mode.
-	i2c_mask_write(IMU_ADDR, PWR_MODE_REG, 2, 0, 0b00);
+	i2c_mask_write(BNO_ADDR, BNO_PWR_MODE_REG, 2, 0, 0b00);
 
 	// Set to use radians and mg.
-	i2c_mask_write(IMU_ADDR, UNIT_SEL_REG, 3, 0, 0b111);
+	i2c_mask_write(BNO_ADDR, BNO_UNIT_SEL_REG, 3, 0, 0b111);
 
-	// Set to NDOF operational mode.
-	i2c_mask_write(IMU_ADDR, OPR_MODE_REG, 4, 0, 0b1000);
+	// Set to IMU operational mode.
+	i2c_mask_write(BNO_ADDR, BNO_OPR_MODE_REG, 4, 0, 0b1000);
 	HAL_Delay(20);
 }
 
 
-int is_imu_calibrated(imu_calib_t* calib) {
+int is_bno_calibrated(imu_calib_t* calib) {
 	if (calib->age > CALIB_LIFE) {
 		uint8_t data;
-		i2c_read(IMU_ADDR, CALIB_STAT_REG, &data, 1);
+		i2c_read(BNO_ADDR, BNO_CALIB_STAT_REG, &data, 1);
 
 		calib->data = data;
 		calib->age = 0;
-
-		//printf("Calibration: %d\n\r", data);
 	}
 
 	++calib->age;
@@ -65,7 +63,7 @@ void update_position(odom_t* odom, double dist) {
 void reset_velocity(odom_t* odom, uint8_t num_iterations) {
 	// Backtrack the distance covered in the last num_iterations.
 	if (num_iterations > 0) {
-		double dist = -1 * odom->velocity * num_iterations / IMU_UPDATE_RT;
+		double dist = -1 * odom->velocity * num_iterations / ODOM_UPDATE_RT;
 		update_position(odom, dist);
 	}
 
@@ -118,7 +116,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	if (!is_imu_calibrated(&calibration)) {
 //		return;
 //	}
-	is_imu_calibrated(&calibration);
+	is_bno_calibrated(&bno_calibration);
 
 	imu_raw_data_t yaw;
 	// imu_raw_data_t lin_accel;
@@ -143,7 +141,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	}
 
 	// Update heading in radians.
-	i2c_read(IMU_ADDR, EUL_DATA_X, yaw.buf, 2);
+	i2c_read(BNO_ADDR, EUL_DATA_X, yaw.buf, 2);
 	odom->cur_pos.heading = yaw.data.datum / 900.0;
 
 	// Get acceleration.
@@ -163,7 +161,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	odom->velocity = (PREDICTED_RATIO * predicted_velocity) +
 //			   	     ((1 - PREDICTED_RATIO) * measured_velocity);
 
-	update_position(odom, odom->velocity / IMU_UPDATE_RT);
+	update_position(odom, odom->velocity / ODOM_UPDATE_RT);
 
 	// Correct position.
 //	if (ultras_off_table()) {
@@ -172,7 +170,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 
 	++(odom->i);
 	if (odom->i % 100 == 0) {
-		printf("%d : %f : %f : %f : %f\n\r", calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
+		printf("%d : %f : %f : %f : %f\n\r", bno_calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
 	}
 }
 
@@ -201,7 +199,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //}
 
 odom_t odometry;
-imu_calib_t calibration;
+imu_calib_t bno_calibration;
 
 void reset_path(path_t* path) {
 	path->num_valid = 0;
