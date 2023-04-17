@@ -117,32 +117,45 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	is_imu_calibrated(&calibration);
 
 	imu_raw_data_t yaw;
-	// imu_raw_data_t lin_accel;
+	imu_raw_data_t lin_accel;
+
+	// If commanded velocity is zero, assume actual velocity is zero.
+	if (fabs(get_PWM(hbridges + 0)) < 0.001 && fabs(get_PWM(hbridges + 1)) < 0.001) {
+		if (odom->zero_count < ZERO_THRESHOLD) {
+			++(odom->zero_count);
+		}
+	}
+	else {
+		odom->zero_count = 0;
+	}
+
+	if (odom->zero_count >= ZERO_THRESHOLD) {
+		reset_velocity(odom, 0);
+		++(odom->i);
+		if (odom->i % 25 == 0) {
+			printf("%d : %f : %f : %f : %f\n\r", calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
+		}
+		return;
+	}
 
 	// Update heading in radians.
 	i2c_read(IMU_ADDR, EUL_DATA_X, yaw.buf, 2);
 	odom->cur_pos.heading = yaw.data.datum / 900.0;
 
-	// If commanded velocity is zero, assume actual velocity is zero.
-//	if (fabs(get_PWM(hbridges[0])) < 0.001 && fabs(get_PWM(hbridges[1])) < 0.001) {
-//		reset_velocity(odom, 0);
-//		return;
-//	}
-
 	// Get acceleration.
-	// i2c_read(IMU_ADDR, LIA_DATA_X, lin_accel.buf, 2);
+	i2c_read(IMU_ADDR, LIA_DATA_X, lin_accel.buf, 2);
 
 	// Update acceleration in m/s^2.
-	// double accel = lin_accel.data.datum / 101.971621;
-	// double measured_velocity = odom->velocity + (accel / IMU_UPDATE_RT);
+	double accel = lin_accel.data.datum / 101.971621;
+	double measured_velocity = odom->velocity + (accel / IMU_UPDATE_RT);
 
 	// Given odom->velocity as our previous velocity, use measured acceleration and predicted
 	// velocity to obtain a new velocity estimate.
-	double predicted_velocity =
-			predict_velocity(odom->velocity, get_PWM(hbridges + 0), get_PWM(hbridges + 1));
+	// double predicted_velocity =
+	//		predict_velocity(odom->velocity, get_PWM(hbridges + 0), get_PWM(hbridges + 1));
 
-	// odom->velocity = measured_velocity;
-	odom->velocity = predicted_velocity;
+	odom->velocity = measured_velocity;
+	// odom->velocity = predicted_velocity;
 //	odom->velocity = (PREDICTED_RATIO * predicted_velocity) +
 //			   	     ((1 - PREDICTED_RATIO) * measured_velocity);
 
@@ -207,18 +220,16 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 
 			// If we are close to angle, move on to DRIVE
 			if (angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD) {
+				safe_drive(0, 0);
 				path->pb_state = DRIVE;
 			}
-			// If we need to turn counter clockwise.
-			else if (
-				(0 < angle_diff && angle_diff < PI / 2) ||
-				(PI < angle_diff && angle_diff < 3 * PI / 2)
-			) {
-				safe_drive(0.0f, 1.0f);
+			// If we need to turn clockwise.
+			else if (0 <= angle_diff && angle_diff < PI) {
+				safe_drive(0.0f, -0.7f);
 			}
-			// Else we need to turn clockwise.
+			// Else we need to turn counter clockwise (????).
 			else {
-				safe_drive(0.0f, -1.0f);
+				safe_drive(0.0f, 0.7f);
 			}
 
 			
@@ -228,7 +239,7 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			// Get angle to point relative to current heading, from 0 to 2PI.
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
-			safe_drive(1, 0);
+			safe_drive(0.5, KP_TURN_ADJUST * angle_diff);
 
 			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
 				safe_drive(0, 0);
@@ -249,12 +260,12 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			// If we still need to turn.
 			if (fabs(d_theta) > ANGLE_THRESHOLD) {
 				// If we need to turn counterclockwise.
-				if ((0.0 < d_theta && d_theta < PI) || d_theta < -1 * PI) {
-					safe_drive(0.0f, 1.0f);
+				if (0 <= d_theta && d_theta < PI) {
+					safe_drive(0.0f, -0.7f);
 				}
 				// Else we need to turn clockwise.
 				else {
-					safe_drive(0.0f, -1.0f);
+					safe_drive(0.0f, 0.7f);
 				}
 			}
 			// If we are in position.
@@ -283,6 +294,10 @@ double get_angle_to_setpoint(odom_t* odom, path_t* path) {
 	double d_y = path->setpoints[path->current_setpoint].y - odom->cur_pos.y;
 
 	double theta = atan(d_y / d_x);
+
+	if (d_x < 0) {
+		theta += PI;
+	}
 
 	double angle_diff = theta - odom->cur_pos.heading;
 

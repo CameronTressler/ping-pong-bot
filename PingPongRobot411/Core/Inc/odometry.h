@@ -35,7 +35,7 @@ void init_imu();
 int is_imu_calibrated(imu_calib_t* calib);
 
 // Output rate for fusion data is 100Hz.
-#define IMU_UPDATE_RT 100.0
+#define IMU_UPDATE_RT 50.0
 
 #define EUL_DATA_X 0x1A
 #define LIA_DATA_X 0x28
@@ -54,11 +54,11 @@ typedef union {
 } imu_raw_data_t;
 
 // The ratio of hbridge commands to expected velocity in m/s.
-#define CMD_TO_VEL 2.0
+#define CMD_TO_VEL 2
 
 // The expected max amount of change in velocity per iteration.
-#define DELTA_ACCEL 0.25
-#define DELTA_DECCEL 0.5
+#define DELTA_ACCEL 0.01
+#define DELTA_DECCEL 0.015
 
 #define PREDICTED_RATIO 1.0
 
@@ -76,9 +76,11 @@ typedef struct {
 	coord_t corners[4];
 
 	uint32_t i;
+	uint8_t zero_count;
 } odom_t;
 
 #define CALIB_LIFE 100
+#define ZERO_THRESHOLD 1
 
 extern imu_calib_t calibration;
 extern odom_t odometry;
