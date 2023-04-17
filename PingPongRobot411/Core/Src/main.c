@@ -379,7 +379,6 @@ int main(void)
 
 		  case intervals: {
 			  display.balls_displayed = true;
-			  // TODO: resolve display glitching between "Intervals" and ball count
 			  display_intervals_begin();
 
 			  // Launch at constant interval only if interrupt hasn't been started
