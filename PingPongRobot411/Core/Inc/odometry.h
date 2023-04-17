@@ -54,11 +54,11 @@ typedef union {
 } imu_raw_data_t;
 
 // The ratio of hbridge commands to expected velocity in m/s.
-#define CMD_TO_VEL 0.75
+#define CMD_TO_VEL 2.0
 
 // The expected max amount of change in velocity per iteration.
-#define DELTA_ACCEL 0.02
-#define DELTA_DECCEL 0.05
+#define DELTA_ACCEL 0.25
+#define DELTA_DECCEL 0.5
 
 #define PREDICTED_RATIO 1.0
 
@@ -85,7 +85,7 @@ extern odom_t odometry;
 
 #define MAX_SETPOINTS 10
 
-#define ANGLE_THRESHOLD 0.05
+#define ANGLE_THRESHOLD 0.2
 
 #define KP_TURN_ADJUST 0.5
 #define MAX_ACCEPTABLE_ANGLE 0.5

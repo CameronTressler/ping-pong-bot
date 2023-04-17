@@ -17,7 +17,7 @@ void init_imu() {
 	i2c_mask_write(IMU_ADDR, UNIT_SEL_REG, 3, 0, 0b111);
 
 	// Set to NDOF operational mode.
-	i2c_mask_write(IMU_ADDR, OPR_MODE_REG, 4, 0, 0b1100);
+	i2c_mask_write(IMU_ADDR, OPR_MODE_REG, 4, 0, 0b1000);
 	HAL_Delay(20);
 }
 
@@ -141,6 +141,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	double predicted_velocity =
 			predict_velocity(odom->velocity, get_PWM(hbridges + 0), get_PWM(hbridges + 1));
 
+	// odom->velocity = measured_velocity;
 	odom->velocity = predicted_velocity;
 //	odom->velocity = (PREDICTED_RATIO * predicted_velocity) +
 //			   	     ((1 - PREDICTED_RATIO) * measured_velocity);
@@ -194,7 +195,8 @@ void reset_path(path_t* path) {
 void add_setpoint(odom_t* odom, path_t* path) {
 	path->setpoints[path->num_valid].x = odom->cur_pos.x;
 	path->setpoints[path->num_valid].y = odom->cur_pos.y;
-	path->num_valid = 0;
+	path->setpoints[path->num_valid].heading = odom->cur_pos.heading;
+	++path->num_valid;
 }
 
 void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
@@ -203,8 +205,12 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			// Get angle to point relative to current heading, from 0 to 2PI.
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
+			// If we are close to angle, move on to DRIVE
+			if (angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD) {
+				path->pb_state = DRIVE;
+			}
 			// If we need to turn counter clockwise.
-			if (
+			else if (
 				(0 < angle_diff && angle_diff < PI / 2) ||
 				(PI < angle_diff && angle_diff < 3 * PI / 2)
 			) {
@@ -215,11 +221,6 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 				safe_drive(0.0f, -1.0f);
 			}
 
-			// If we are close to angle, move on to DRIVE
-			if (angle_diff < ANGLE_THRESHOLD || angle_diff > 2 * PI - ANGLE_THRESHOLD ||
-				(PI - ANGLE_THRESHOLD < angle_diff && angle_diff < PI + ANGLE_THRESHOLD)) {
-				path->pb_state = DRIVE;
-			}
 			
 			break;
 		}
@@ -227,22 +228,15 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			// Get angle to point relative to current heading, from 0 to 2PI.
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
-			double forward_diff = fabs(angle_diff);
-			double backward_diff = fabs(angle_diff - PI);
-
-			// If driving forwards.
-			if (forward_diff < backward_diff) {
-				safe_drive(1.0f, KP_TURN_ADJUST * angle_diff);
-			}
-			// If driving backwards.
-			else {
-				safe_drive(-1.0f, KP_TURN_ADJUST * angle_diff);
-			}
+			safe_drive(1, 0);
 
 			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
+				safe_drive(0, 0);
 				path->pb_state = LAUNCH;
 			}
-			else if (angle_diff > MAX_ACCEPTABLE_ANGLE) {
+			else if (!(angle_diff < MAX_ACCEPTABLE_ANGLE ||
+					   angle_diff > 2 * PI - MAX_ACCEPTABLE_ANGLE)) {
+				safe_drive(0, 0);
 				path->pb_state = TURN;
 			}
 

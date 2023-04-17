@@ -169,11 +169,11 @@ int main(void)
 
   while (1)
   {
-//	  if (n64_count == 25) {
-//		  n64_read(N64_RESET, NULL);
-//		  HAL_Delay(50); // without some delay the n64 inputs are finnicky
-//		  n64_count = 0;
-//	  }
+	  if (n64_count == 25) {
+		  n64_read(N64_RESET, NULL);
+		  HAL_Delay(50); // without some delay the n64 inputs are finnicky
+		  n64_count = 0;
+	  }
 	  ++n64_count;
 
 	  // get input from controller
