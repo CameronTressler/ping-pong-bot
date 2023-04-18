@@ -43,9 +43,6 @@ void init_hbridges() {
 }
 
 void set_PWM(hbridge_t* hbridge, float PWM) {
-	if (hbridge->PWM == PWM) {
-		return;
-	}
 
 	hbridge->PWM = PWM;
 
