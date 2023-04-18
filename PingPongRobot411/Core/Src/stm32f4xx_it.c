@@ -26,6 +26,7 @@
 #include "serialDisplay.h"
 #include "odometry.h"
 #include "controller.h"
+#include "solenoid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -214,7 +215,7 @@ void EXTI0_IRQHandler(void)
 	update_ultra(ultras + 0, TIM3->CNT);
 
   /* USER CODE END EXTI0_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  HAL_GPIO_EXTI_IRQHandler(Ultrasonic_echo_Pin);
   /* USER CODE BEGIN EXTI0_IRQn 1 */
 
   /* USER CODE END EXTI0_IRQn 1 */
@@ -231,7 +232,7 @@ void EXTI1_IRQHandler(void)
 	update_ultra(ultras + 1, TIM3->CNT);
 
   /* USER CODE END EXTI1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+  HAL_GPIO_EXTI_IRQHandler(Ultrasonic_echoC1_Pin);
   /* USER CODE BEGIN EXTI1_IRQn 1 */
 
   /* USER CODE END EXTI1_IRQn 1 */
@@ -243,11 +244,10 @@ void EXTI1_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-
 	increment_ball_count();
-
+	HAL_Delay(100);
   /* USER CODE END EXTI4_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
+  HAL_GPIO_EXTI_IRQHandler(IR_breakbeam_sensor_Pin);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
 
   /* USER CODE END EXTI4_IRQn 1 */
@@ -260,7 +260,14 @@ void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
 
-	update_odom(&odometry);
+	update_odom(&odometry, hbridges, ultras);
+
+	if (path.cmds_active) {
+		set_playback_cmds(&odometry, &path, &display);
+	}
+	else if (dynamic_cmds_active) {
+		move_dynamic(&odometry, ultras);
+	}
 
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
   HAL_TIM_IRQHandler(&htim10);
@@ -279,7 +286,7 @@ void TIM5_IRQHandler(void)
   /* USER CODE END TIM5_IRQn 0 */
   HAL_TIM_IRQHandler(&htim5);
   /* USER CODE BEGIN TIM5_IRQn 1 */
-  controller_launch_ball();
+  solenoid_actuate();
 
   /* USER CODE END TIM5_IRQn 1 */
 }

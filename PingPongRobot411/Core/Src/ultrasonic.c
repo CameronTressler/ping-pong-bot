@@ -1,4 +1,6 @@
 #include "ultrasonic.h"
+#include "hbridge.h"
+#include <stdio.h>
 
 float get_ultra_distance_in(unsigned int count_us) {
 	return ((float) count_us) / 144.0;
@@ -28,8 +30,19 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 		unsigned int elapsed_counts = current_count - ultra->count_of_echo_start;
 
 		if (get_ultra_distance_in(elapsed_counts) > MAX_ON_TABLE_IN) {
-			if (ultra->off_table < 3) {
+			if (ultra->off_table < DEFINITELY_OFF_TABLE_THRESHOLD) {
 				++ultra->off_table;
+
+				// TODO: Consider adding forced deceleration in.
+//				if (ultra->off_table == 3) {
+//					set_PWM(hbridges + 0, -1 * get_PWM(hbridges + 0));
+//					set_PWM(hbridges + 1, -1 * get_PWM(hbridges + 1));
+//
+//					HAL_Delay(20);
+//
+//					set_PWM(hbridges + 0, 0.0);
+//					set_PWM(hbridges + 1, 0.0);
+//				}
 			}
 		}
 		else {
@@ -43,11 +56,28 @@ void update_ultra(ultra_t* ultra, unsigned int current_count) {
 	}
 }
 
-unsigned int is_off_table(ultra_t* ultra) {
-	if (ultra->off_table >= 2) {
-		return 1;
+bool is_off_table(ultra_t* ultra) {
+	if (ultra->off_table >= OFF_TABLE_THRESHOLD) {
+		return true;
 	}
-	return 0;
+	return false;
+}
+
+bool definitely_off_table(ultra_t* ultra) {
+	if (ultra->off_table >= DEFINITELY_OFF_TABLE_THRESHOLD) {
+		return true;
+	}
+	return false;
+}
+
+bool ultras_definitely_off_table(void) {
+	for (uint8_t i = 0; i < NUM_ULTRAS; ++i) {
+		if (definitely_off_table(ultras + i)) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 ultra_t ultras[NUM_ULTRAS];

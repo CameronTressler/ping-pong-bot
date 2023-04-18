@@ -6,14 +6,10 @@
 
 #include "main.h"
 
-typedef struct {
-	int ball_count;
-	int countdown;
-	bool change;
-	char *top_text; // must be 40 characters wide!!
-	char *bottom_text; // must be 40 characters wide!!
+#define TIM5_OFFSET 0x40000C00
 
-} display_t;
+#define TIM_COUNT_OFFSET 0x24
+#define TIM_ARR_OFFSET 0x2C
 
 typedef enum
 {
@@ -21,15 +17,40 @@ typedef enum
     menu_1,
     menu_2,
     menu_3,
+	menu_4,
     launch,
-	pb_countdown,
+	dynamic_not_calibrated,
+	dynamic_calibrate,
+	dynamic_countdown,
+	dynamic,
+	pb_not_calibrated,
+	pb_calibrate,
 	pb_record,
-	pb_relocate,
-	pb_begin,
+	pb_go,
 	intervals,
-	intervals_countdown
-
+	intervals_countdown,
+	intervals_select_high,
+	intervals_select_medium,
+	intervals_select_low
 } display_state;
+
+typedef struct {
+	int ball_count;
+	int interval_delay;
+	int speed;
+	float last_pwm;
+	uint32_t * interval_count;
+	uint32_t * ARR;
+	bool balls_displayed;
+	int countdown;
+	bool change;
+	char *top_text; // must be 40 characters wide!!
+	char *bottom_text; // must be 40 characters wide!!
+	display_state intervals_distance_last;
+
+} display_t;
+
+
 
 extern I2C_HandleTypeDef hi2c3;
 extern display_t display;
@@ -47,8 +68,6 @@ void display_reset_ball_count(void);
 // Menu architecture
 void display_playback_record(void);
 
-void display_playback_relocate(void);
-
 void display_playback_begin(void);
 
 void display_freeplay(void);
@@ -65,10 +84,23 @@ void display_menu_2(void);
 
 void display_menu_3(void);
 
-// Count down display
-void display_pb_countdown(void);
+void display_menu_4(void);
+
+void display_intervals_high(void);
+
+void display_intervals_medium(void);
+
+void display_intervals_low(void);
 
 void display_intervals_countdown(void);
+
+void display_freeplay_speed(void);
+
+void display_dynamic_calibrate(void);
+
+void display_dynamic_countdown(void);
+
+
 
 // Initialization and commands
 void display_init(void);
@@ -77,6 +109,9 @@ void display_write_string(char *str);
 
 void display_send_cmd(char cmd);
 
+void display_playback_calibrate(void);
+void display_not_calibrated(void);
+
 
 // Commands
 #define SPECIAL_COMMAND 0xFE
@@ -84,7 +119,7 @@ void display_send_cmd(char cmd);
 #define ON_OFF_CMD 0x08
 
 // Random
-#define BALL_COUNT 20 // idk about this lol
+#define MAX_BALL_COUNT 6 // idk about this lol
 
 
 #endif

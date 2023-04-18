@@ -91,6 +91,7 @@ extern solenoid_t solenoid;
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+//	NVIC_SystemReset();
 	n64_t n64_status_prev;
 	n64_t n64_status_curr;
 
@@ -143,18 +144,21 @@ int main(void)
   n64_init(&n64_status_curr);
   n64_read(N64_RESET, NULL);
 
-//  init_odom(&odometry);
-//  init_imu();
+  init_odom(&odometry);
+  init_bno();
+  init_adxl();
 
   // Start IMU timer
-  //HAL_TIM_Base_Start_IT(&htim10);
+  HAL_TIM_Base_Start_IT(&htim10);
 
   // State machine
   display_state curr_state = welcome;
   display_state prev_state = welcome;
-
-  // Is htim5 init?
+  float intervals_pwm = 0;
+  // Is htim5 interrupt
   bool htim5_int = 0;
+
+  bool set_freeplay_pwm = true;
 
   /* USER CODE END 2 */
 
@@ -162,14 +166,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
   int n64_count = 0;
+  dynamic_cmds_active = false;
+
 
   while (1)
   {
-
 	  if (n64_count == 25) {
-	  	n64_read(N64_RESET, NULL);
-	  	n64_count = 0;
+		  n64_read(N64_RESET, NULL);
+		  HAL_Delay(50); // without some delay the n64 inputs are finnicky
+		  n64_count = 0;
 	  }
+	  ++n64_count;
+
 	  // get input from controller
 	  n64_read(N64_POLL, &n64_status_curr);
 
@@ -184,6 +192,7 @@ int main(void)
 	  // State machine
 	  switch(prev_state) {
 		  case welcome: {
+			  display.balls_displayed = false;
 			  display_welcome();
 
 			  // Go to menu
@@ -196,8 +205,9 @@ int main(void)
 		  }
 
 		  case menu_1: {
+			  display.balls_displayed = false;
 			  display_menu_1();
-
+			  controller_drive(&n64_status_curr);
 			  // Go to next menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_2;
@@ -206,12 +216,13 @@ int main(void)
 
 			  // Go to previous menu
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
-				  curr_state = menu_3;
+				  curr_state = menu_4;
 				  display.change = true;
 			  }
 
 			  // Or go to launching
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  set_freeplay_pwm = true;
 				  curr_state = launch;
 				  display.change = true;
 			  }
@@ -220,8 +231,9 @@ int main(void)
 		  }
 
 		  case menu_2: {
+			  display.balls_displayed = false;
 			  display_menu_2();
-
+			  controller_drive(&n64_status_curr);
 			  // Go to next menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
 				  curr_state = menu_3;
@@ -234,21 +246,31 @@ int main(void)
 				  display.change = true;
 			  }
 
-			  // Go to start playback
+			  // Go to playback record
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  curr_state = pb_countdown;
+				  if (!odometry.bno_calibrated) {
+					  curr_state = pb_not_calibrated;
+				  }
+				  else {
+					  curr_state = pb_calibrate;
+				  }
+
 				  display.change = true;
+
+				  // Reset path before creating new setpoints.
+				  reset_path(&path);
 			  }
 
 			  break;
 		  }
 
 		  case menu_3: {
+			  display.balls_displayed = false;
 			  display_menu_3();
-
+			  controller_drive(&n64_status_curr);
 			  // Go to next menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
-				  curr_state = menu_1;
+				  curr_state = menu_4;
 				  display.change = true;
 			  }
 
@@ -260,7 +282,32 @@ int main(void)
 
 			  // Go to intervals
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  curr_state = intervals_countdown;
+				  curr_state = display.intervals_distance_last;
+				  display.change = true;
+			  }
+
+			  break;
+		  }
+
+		  case menu_4: {
+			  display.balls_displayed = false;
+			  display_menu_4();
+			  controller_drive(&n64_status_curr);
+			  // Go to next menu
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  curr_state = menu_1;
+				  display.change = true;
+			  }
+
+			  // Go to previous menu
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = menu_3;
+				  display.change = true;
+			  }
+
+			  // Go to dynamic calibrate
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  curr_state = dynamic_not_calibrated;
 				  display.change = true;
 			  }
 
@@ -268,7 +315,13 @@ int main(void)
 		  }
 
 		  case launch: {
+			  display.balls_displayed = true;
 			  display_freeplay();
+
+			  if (set_freeplay_pwm) {
+				  controller_start_launcher(LAUNCH_START_PWM, display.last_pwm);
+				  set_freeplay_pwm = false;
+			  }
 
 			  // Launch ball
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
@@ -278,8 +331,59 @@ int main(void)
 				  controller_drive(&n64_status_curr);
 			  }
 
+			  // Increment and decrement speed
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  if (display.speed < 4) {
+					  display.speed++;
+				  } else {
+					  display.speed = 1;
+				  }
+			  }
+
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  if (display.speed > 1) {
+					  display.speed--;
+				  } else {
+					  display.speed = 4;
+				  }
+			  }
+
+			  // only adjust if speed has changed
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU) ||
+					  n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD) ) {
+
+				  // update display
+				  display_freeplay_speed();
+
+				  // Decide speed
+				  switch(display.speed) {
+					  case 4: {
+						  controller_adjust_launch_speed(FREEPLAY_LAUNCH_PWM);
+						  display.last_pwm = FREEPLAY_LAUNCH_PWM;
+						  break;
+					  }
+					  case 3: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_HIGH);
+						  display.last_pwm = INTERVALS_PWM_HIGH;
+						  break;
+					  }
+					  case 2: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_MEDIUM);
+						  display.last_pwm = INTERVALS_PWM_MEDIUM;
+						  break;
+					  }
+					  case 1: {
+						  controller_adjust_launch_speed(INTERVALS_PWM_LOW);
+						  display.last_pwm = INTERVALS_PWM_LOW;
+						  break;
+					  }
+				  }
+			  }
+
 			  // Exit
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  set_PWM(hbridges + 2, 0);
+				  set_PWM(hbridges + 3, 0);
 				  curr_state = menu_1;
 				  display.change = true;
 			  }
@@ -287,16 +391,71 @@ int main(void)
 			  break;
 		  }
 
-		  case pb_countdown: {
-			  display_pb_countdown();
+		  case dynamic_not_calibrated: {
+			  display.balls_displayed = false;
+			  controller_drive(&n64_status_curr);
+
+			  display_not_calibrated();
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_4;
+				  display.change = true;
+			  }
+			  if (odometry.bno_calibrated) {
+				  curr_state = dynamic_calibrate;
+				  display.change= true;
+			  }
+
+			  break;
+		  }
+
+		  case dynamic_calibrate: {
+			  display.balls_displayed = false;
+			  controller_drive(&n64_status_curr);
+
+			  display_dynamic_calibrate();
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_4;
+				  display.change = true;
+			  }
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  curr_state = dynamic_countdown;
+				  display.countdown = 3;
+				  display.change = true;
+
+				  set_dynamic_angle(odometry.cur_pos.heading);
+			  }
+
+			  break;
+		  }
+
+		  case dynamic_countdown: {
+			  display.balls_displayed = false;
+			  display_dynamic_countdown();
 
 			  // Delay
-			  HAL_Delay(500);
+			  HAL_Delay(2000);
+
+			  if (display.countdown == 2) {
+					// Start launcher
+					set_PWM(hbridges + 2, -1 * LAUNCH_START_PWM);
+					set_PWM(hbridges + 3, LAUNCH_START_PWM);
+					  --display.countdown;
+			  }
+
+			  else if (display.countdown == 1) {
+
+					// Spin launcher to final speed
+					set_PWM(hbridges + 2, -1 * INTERVALS_PWM_MEDIUM);
+					set_PWM(hbridges + 3, INTERVALS_PWM_MEDIUM);
+					  --display.countdown;
+			  }
 
 			  // If done, exit
-			  if(display.countdown == 0) {
+			  else if(display.countdown == 0) {
 				  display.countdown = 3;
-				  curr_state = pb_record;
+				  curr_state = dynamic;
 				  display.change = true;
 			  }
 
@@ -308,47 +467,164 @@ int main(void)
 			  break;
 		  }
 
-		  case pb_record: {
-			  display_playback_record();
+		  case dynamic: {
+			  display.balls_displayed = false;
+			  display_intervals_begin();
 
-			  // TODO: record sequence
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_4;
+				  display.change = true;
+			  }
 
-			  // Exit
+			  dynamic_cmds_active = true;
+
+			  // Launch at constant interval only if interrupt hasn't been started
+			  if(!htim5_int){
+				  htim5_int = true;
+
+				  // Start interrupt with default of 5 seconds
+				  if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK ) {
+					  Error_Handler();
+				  }
+			  }
+
+			  // Increment and decrement interrupt speed by two seconds 1-11 seconds
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  if(display.interval_delay < 11) {
+					  display.change = true;
+					  display.interval_delay += 2;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
+				  }
+			  }
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  if(display.interval_delay > 1) {
+					  display.change = true;
+					  display.interval_delay -= 2;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
+				  }
+			  }
+
+			  // Exit and cancel interrupt
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
-				  curr_state = pb_relocate;
+					// Stop launcher
+					set_PWM(hbridges + 2, 0.0f);
+					set_PWM(hbridges + 3, 0.0f);
+
+				  curr_state = menu_4;
+				  dynamic_cmds_active = false;
+				  display.change = true;
+				  htim5_int = false;
+				  if(HAL_TIM_Base_Stop_IT(&htim5) != HAL_OK) {
+					  Error_Handler();
+				  }
+			  }
+
+			  break;
+		  }
+
+		  case pb_not_calibrated: {
+			  display.balls_displayed = false;
+			  controller_drive(&n64_status_curr);
+
+			  display_not_calibrated();
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_2;
+				  display.change = true;
+			  }
+			  if (odometry.bno_calibrated) {
+				  curr_state = pb_calibrate;
+				  display.change= true;
+			  }
+
+			  break;
+		  }
+
+		  case pb_calibrate: {
+			  display.balls_displayed = false;
+			  controller_drive(&n64_status_curr);
+
+			  display_playback_calibrate();
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  curr_state = pb_record;
+				  adxl_calibrate(&odometry);
+				  display.change = true;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_2;
 				  display.change = true;
 			  }
 
 			  break;
 		  }
 
-		  case pb_relocate: {
-			  display_playback_relocate();
+		  case pb_record: {
+			  display.balls_displayed = false;
+			  display_playback_record();
+			  controller_drive(&n64_status_curr);
 
-			  // Start playback
-			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_Start)) {
-				  curr_state = pb_begin;
+					  // A button: drop setpoint
+				if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  add_setpoint(&odometry, &path);
+				}
+
+			  // B button: finish path
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B) &&
+				 path.num_valid > 0) {
+				  curr_state = pb_go;
 				  display.change = true;
-			  }
-			  break;
-		  }
 
-		  case pb_begin: {
+				  // Set commands from path planning to be active.
+				  path.cmds_active = true;
+			  }
+
+				  break;
+			  }
+
+		  case pb_go: {
+			  display.balls_displayed = true;
 			  display_playback_begin();
 
-			  // TODO: playback run and exit when complete
+				// B button: exit back to menu
+				if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_2;
+				  display.change = true;
+
+				  // Disable commands from path planning.
+				  path.cmds_active = false;
+			  }
 
 			  break;
 		  }
 
 		  case intervals_countdown: {
+			  display.balls_displayed = false;
 			  display_intervals_countdown();
 
 			  // Delay
-			  HAL_Delay(500);
+			  HAL_Delay(2000);
+
+			  if (display.countdown == 2) {
+					// Start launcher
+					set_PWM(hbridges + 2, -1 * LAUNCH_START_PWM);
+					set_PWM(hbridges + 3, LAUNCH_START_PWM);
+					  --display.countdown;
+			  }
+
+			  else if (display.countdown == 1) {
+
+					// Spin launcher to final speed
+					set_PWM(hbridges + 2, -1 * intervals_pwm);
+					set_PWM(hbridges + 3, intervals_pwm);
+					  --display.countdown;
+			  }
 
 			  // If done, exit
-			  if(display.countdown == 0) {
+			  else if(display.countdown == 0) {
 				  display.countdown = 3;
 				  curr_state = intervals;
 				  display.change = true;
@@ -364,23 +640,44 @@ int main(void)
 
 
 		  case intervals: {
-			  // TODO: resolve display glitching between "Intervals" and ball count
+			  display.balls_displayed = true;
 			  display_intervals_begin();
 
 			  // Launch at constant interval only if interrupt hasn't been started
 			  if(!htim5_int){
 				  htim5_int = 1;
 
-				  // Start interrupt with default of 2 seconds
+				  // Start interrupt with default of 5 seconds
 				  if (HAL_TIM_Base_Start_IT(&htim5) != HAL_OK ) {
 					  Error_Handler();
 				  }
 			  }
 
-			  // TODO: Maybe have functionality to adjust timing?
+			  // Increment and decrement interrupt speed by two seconds 1-11 seconds
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  if(display.interval_delay < 11) {
+					  display.change = true;
+					  display.interval_delay += 2;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
+				  }
+			  }
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  if(display.interval_delay > 1) {
+					  display.change = true;
+					  display.interval_delay -= 2;
+					  *(display.ARR) = (uint32_t) (display.interval_delay * 10000);
+					  *(display.interval_count) = (uint32_t) 0;
+				  }
+			  }
 
 			  // Exit and cancel interrupt
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+					// Stop launcher
+					set_PWM(hbridges + 2, 0.0f);
+					set_PWM(hbridges + 3, 0.0f);
+
 				  curr_state = menu_3;
 				  display.change = true;
 				  htim5_int = 0;
@@ -389,6 +686,79 @@ int main(void)
 				  }
 			  }
 
+			  break;
+		  }
+
+		  case intervals_select_high: {
+			  display.balls_displayed = false;
+			  display_intervals_high();
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  intervals_pwm = INTERVALS_PWM_HIGH;
+				  display.intervals_distance_last = intervals_select_high;
+				  display.countdown = 3;
+				  curr_state = intervals_countdown;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_3;
+				  display.change = true;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  display.change = true;
+				  curr_state = intervals_select_medium;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = intervals_select_low;
+				  display.change = true;
+			  }
+			  break;
+		  }
+
+		  case intervals_select_medium: {
+			  display.balls_displayed = false;
+			  display_intervals_medium();
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  intervals_pwm = INTERVALS_PWM_MEDIUM;
+				  display.intervals_distance_last = intervals_select_medium;
+				  display.countdown = 3;
+				  curr_state = intervals_countdown;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_3;
+				  display.change = true;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  curr_state = intervals_select_low;
+				  display.change = true;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = intervals_select_high;
+				  display.change = true;
+			  }
+			  break;
+		  }
+
+		  case intervals_select_low: {
+			  display.balls_displayed = false;
+			  display_intervals_low();
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  intervals_pwm = INTERVALS_PWM_LOW;
+				  display.intervals_distance_last = intervals_select_low;
+				  display.countdown = 3;
+				  curr_state = intervals_countdown;
+
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_3;
+				  display.change = true;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  curr_state = intervals_select_high;
+				  display.change = true;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = intervals_select_medium;
+				  display.change = true;
+			  }
 			  break;
 		  }
 
@@ -561,9 +931,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 21;
+  htim4.Init.Prescaler = 1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 65535;
+  htim4.Init.Period = 255;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
@@ -744,11 +1114,11 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|LD2_Pin|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, N64_transmit_Pin|LD2_Pin|Hbridge_0_NDIR_Pin|Hbridge_0_DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, Solenoid_enable__gate0_Pin|Hbridge_3_NDIR_Pin|Hbridge_3_DIR_Pin|Hbridge_2_NDIR_Pin
+                          |Hbridge_2_DIR_Pin|Hbridge_1_NDIR_Pin|Hbridge_1_DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
@@ -759,35 +1129,35 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC0 PC1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
+  /*Configure GPIO pins : Ultrasonic_echo_Pin Ultrasonic_echoC1_Pin */
+  GPIO_InitStruct.Pin = Ultrasonic_echo_Pin|Ultrasonic_echoC1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA0 LD2_Pin PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|LD2_Pin|GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : N64_transmit_Pin LD2_Pin Hbridge_0_NDIR_Pin Hbridge_0_DIR_Pin */
+  GPIO_InitStruct.Pin = N64_transmit_Pin|LD2_Pin|Hbridge_0_NDIR_Pin|Hbridge_0_DIR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
+  /*Configure GPIO pin : N64_receive_Pin */
+  GPIO_InitStruct.Pin = N64_receive_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(N64_receive_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  /*Configure GPIO pin : IR_breakbeam_sensor_Pin */
+  GPIO_InitStruct.Pin = IR_breakbeam_sensor_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(IR_breakbeam_sensor_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC5 PC6 PC7 PC8
-                           PC10 PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : Solenoid_enable__gate0_Pin Hbridge_3_NDIR_Pin Hbridge_3_DIR_Pin Hbridge_2_NDIR_Pin
+                           Hbridge_2_DIR_Pin Hbridge_1_NDIR_Pin Hbridge_1_DIR_Pin */
+  GPIO_InitStruct.Pin = Solenoid_enable__gate0_Pin|Hbridge_3_NDIR_Pin|Hbridge_3_DIR_Pin|Hbridge_2_NDIR_Pin
+                          |Hbridge_2_DIR_Pin|Hbridge_1_NDIR_Pin|Hbridge_1_DIR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -838,10 +1208,10 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-	set_PWM(hbridges[0], 0);
-	set_PWM(hbridges[1], 0);
-	set_PWM(hbridges[2], 0);
-	set_PWM(hbridges[3], 0);
+	set_PWM(hbridges + 0, 0);
+	set_PWM(hbridges + 1, 0);
+	set_PWM(hbridges + 2, 0);
+	set_PWM(hbridges + 3, 0);
 	__disable_irq();
 	while (1)
 	{

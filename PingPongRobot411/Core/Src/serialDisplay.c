@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "main.h"
+#include "controller.h"
 
 display_t display;
 
@@ -43,18 +44,20 @@ char countdown_display_table[4][28] = {
 void increment_ball_count(void) {
 
 	// Increment ball count
-	if(display.ball_count != 20)
+	if(display.ball_count != MAX_BALL_COUNT)
 		++display.ball_count;
 
-	// Write to display
-	display.top_text = "";
-	char top_str[50];
-	strcpy(top_str, "Balls: ");
+	if (display.balls_displayed) {
+		// Write to display
+		display.top_text = "";
+		char top_str[50];
+		strcpy(top_str, "Balls: ");
 
-	display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
+		display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
 
-	display_write_string(display.top_text);
-	display_write_string(display.bottom_text);
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+	}
 }
 
 // Decreases ball count by one and updates display
@@ -76,7 +79,7 @@ void decrement_ball_count(void) {
 
 // Resets value of ball count to BALL_COUNT defined in serialDisplay.h
 void display_reset_ball_count(void) {
-	display.ball_count = BALL_COUNT;
+	display.ball_count = MAX_BALL_COUNT;
 
 	// Update display
 	display.top_text = "";
@@ -88,6 +91,17 @@ void display_reset_ball_count(void) {
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 
+}
+
+void display_freeplay_speed(void) {
+	display.top_text = "";
+
+	char top_str[50];
+	strcpy(top_str, "Speed: ");
+
+	display.top_text = strcat(top_str, ball_display_table[display.speed]);
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
 void display_freeplay(void) {
@@ -107,18 +121,8 @@ void display_freeplay(void) {
 
 void display_playback_record(void) {
 	if(display.change) {
-		display.bottom_text = "RECORDING...                            ";
-		display.top_text = "STOP: B                                 ";
-		display_write_string(display.bottom_text);
-		display_write_string(display.top_text);
-		display.change = false;
-	}
-}
-
-void display_playback_relocate(void) {
-	if(display.change) {
-		display.top_text = "Relocate                                ";
-		display.bottom_text = "START                                   ";
+		display.top_text = "Setpoint: A                             ";
+		display.bottom_text = "Finish: B                               ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
 		display.change = false;
@@ -127,8 +131,12 @@ void display_playback_relocate(void) {
 
 void display_playback_begin(void) {
 	if(display.change) {
-		display.top_text = "Play Back                               ";
-		display.bottom_text = "Get ready!                              ";
+		display.top_text = "";
+		char top_str[50];
+		strcpy(top_str, "Balls: ");
+		display.top_text = strcat(top_str, ball_display_table[display.ball_count]);
+
+		display.bottom_text = "Playing back!                           ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
 		display.change = false;
@@ -137,7 +145,10 @@ void display_playback_begin(void) {
 
 void display_intervals_begin(void) {
 	if(display.change) {
-		display.top_text = "Intervals                               ";
+		display.top_text = "";
+		char top_str[50];
+		strcpy(top_str, "Delay: ");
+		display.top_text = strcat(top_str, ball_display_table[display.interval_delay]);
 		display.bottom_text = "STOP: B                                 ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
@@ -176,19 +187,18 @@ void display_menu_3(void) {
 
 }
 
-void display_welcome(void) {
+void display_menu_4(void) {
 	if(display.change) {
-		display.top_text = "WELCOME                                 ";
-		display.bottom_text = "Press START                             ";
+		display.top_text = "Dynamic                                 ";
+		display.bottom_text = "Press A                                 ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);
 		display.change = false;
 	}
-
 }
 
-void display_pb_countdown(void) {
-	display.top_text = "Play Back                               ";
+void display_dynamic_countdown(void) {
+	display.top_text = "Dynamic                                 ";
 	display.bottom_text = "";
 
 	char bottom_str[50];
@@ -198,6 +208,27 @@ void display_pb_countdown(void) {
 
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
+}
+
+void display_dynamic_calibrate(void) {
+	if(display.change) {
+		display.top_text = "Align table edge                        ";
+		display.bottom_text = "Press A                                 ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
+void display_welcome(void) {
+	if(display.change) {
+		display.top_text = "WELCOME                                 ";
+		display.bottom_text = "Press START                             ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+
 }
 
 void display_intervals_countdown(void) {
@@ -212,6 +243,62 @@ void display_intervals_countdown(void) {
 	display_write_string(display.top_text);
 	display_write_string(display.bottom_text);
 }
+
+void display_intervals_high(void) {
+	if(display.change) {
+		display.top_text = "Select Range                            ";
+		display.bottom_text = "A: Long Range                           ";
+
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
+void display_intervals_medium(void) {
+	if(display.change) {
+		display.top_text = "Select Range                            ";
+		display.bottom_text = "A: Medium Range                         ";
+
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
+void display_intervals_low(void) {
+	if(display.change) {
+		display.top_text = "Select Range                            ";
+		display.bottom_text = "A: Short Range                          ";
+
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
+void display_playback_calibrate(void) {
+	if(display.change) {
+		display.top_text = "Go to back right                        ";
+		display.bottom_text = "A: Ready                                ";
+
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
+void display_not_calibrated(void) {
+	if (display.change) {
+		display.top_text = "Please calibrate                        ";
+		display.bottom_text = "B: Back                                 ";
+
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
 
 void display_send_data(char data) {
 	char data_u, data_l;
@@ -231,7 +318,13 @@ void display_send_data(char data) {
 void display_init (void)
 {
 	display.countdown = 3;
+	display.speed = 4;
+	display.last_pwm = FREEPLAY_LAUNCH_PWM;
 	display.change = true;
+	display.interval_delay = 5;
+	display.ARR = (uint32_t*)(TIM5_OFFSET + TIM_ARR_OFFSET);
+	display.interval_count = (uint32_t*)(TIM5_OFFSET + TIM_COUNT_OFFSET);
+	display.intervals_distance_last = intervals_select_high;
 
 	// 4 bit initialisation
 	HAL_Delay(50);  // wait for >40ms

@@ -12,51 +12,76 @@ extern solenoid_t solenoid;
 
 // Launch one ball
 void controller_launch_ball() {
-	// Adjust display
-	decrement_ball_count();
-
-	// Start launcher
-	set_PWM(hbridges[2], LAUNCH_PWM);
-	set_PWM(hbridges[3], -LAUNCH_PWM);
-
-	// Maybe delay slightly to get up to speed?
-	HAL_Delay(LAUNCH_DELAY);
-
 	// Actuate solenoid
 	solenoid_actuate();
-	HAL_Delay(LAUNCH_DELAY/3);
+	HAL_Delay(1000);
 
-	// Turn off hbridges
-	set_PWM(hbridges[2], 0);
-	set_PWM(hbridges[3], 0);
+}
+
+void controller_start_launcher(float start_pwm, float launch_pwm) {
+	// Start launcher
+		set_PWM(hbridges + 2, -1 * start_pwm);
+		set_PWM(hbridges + 3, start_pwm);
+
+		// Delay slightly to gather inertia.
+		HAL_Delay(LAUNCH_START_DELAY);
+
+
+		// Spin launcher to final speed
+		set_PWM(hbridges + 2, -1 * launch_pwm);
+		set_PWM(hbridges + 3, launch_pwm);
+
+		// Delay slightly to get up to speed?
+		HAL_Delay(LAUNCH_DELAY);
+}
+
+void controller_adjust_launch_speed(float launch_pwm) {
+	// Spin launcher to final speed
+	set_PWM(hbridges + 2, -1 * launch_pwm);
+	set_PWM(hbridges + 3, launch_pwm);
+
+	// Delay slightly to get up to speed?
+	HAL_Delay(LAUNCH_DELAY);
 }
 
 void controller_drive(n64_t *n64_state) {
-	float forward, left;
-	  if (n64_state->button_status[N64_DU] == n64_state->button_status[N64_DD]) {
+	float forward = 0.0;
+	float left = 0.0;
+	  if (n64_state->button_status[N64_DU] == n64_state->button_status[N64_DD] &&
+		  n64_state->button_status[N64_L] == n64_state->button_status[N64_R]) {
 		  forward = 0;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_DU]) {
 		  forward = 1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_DD]){
 		  forward = -1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 
 	  if (n64_state->button_status[N64_L] == n64_state->button_status[N64_R]) {
 		  left = 0;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_L]) {
 		  left = 1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_R]) {
 		  left = -1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 
 	  // TODO: consider using constant values for forward/backward + turning at the same time
 	  // could have smooth predetermined values instead of drive logic.
-
-	  safe_drive(forward, left);
 }
 
 
