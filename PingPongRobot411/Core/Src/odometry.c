@@ -38,10 +38,7 @@ bool is_bno_calibrated(imu_calib_t* calib, double heading) {
 
 	// If gyro calibration is 0 and heading is zero, gyro is not
 	// calibrated.
-	if ((calib->data & 0b110000) == 0) {
-		return true;
-	}
-	return false;
+	return ((calib->data & 0b110000) != 0);
 }
 
 void init_odom(odom_t* odom) {
@@ -257,11 +254,11 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 				(0 < angle_diff && angle_diff < PI / 2) ||
 				(PI < angle_diff && angle_diff < 3 * PI / 2)
 			) {
-				safe_drive(0.0f, -0.75f);
+				safe_drive(0.0f, -0.9f);
 			}
 			// Else we need to turn counter clockwise.
 			else {
-				safe_drive(0.0f, 0.75f);
+				safe_drive(0.0f, 0.9f);
 			}
 
 			
@@ -271,17 +268,24 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			// Get angle to point relative to current heading, from 0 to 2PI.
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
-			double forward_diff = fabs(angle_diff);
-			double backward_diff = fabs(angle_diff - PI);
-
-			// If driving forwards.
-			if (forward_diff < backward_diff) {
-				safe_drive(0.5f, KP_TURN_ADJUST * angle_diff);
-			}
-			// If driving backwards.
-			else {
+			if ((PI / 4.0) / angle_diff && angle_diff < (3 * PI / 4.0)) {
 				safe_drive(-0.5f, KP_TURN_ADJUST * angle_diff);
 			}
+			else {
+				safe_drive(0.5f, KP_TURN_ADJUST * angle_diff);
+			}
+
+//			double forward_diff = fabs(angle_diff - PI);
+//			double backward_diff = fabs(angle_diff);
+//
+//			// If driving forwards.
+//			if (forward_diff > backward_diff) {
+//				safe_drive(0.5f, KP_TURN_ADJUST * angle_diff);
+//			}
+//			// If driving backwards.
+//			else {
+//				safe_drive(-0.5f, KP_TURN_ADJUST * angle_diff);
+//			}
 
 			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
 				safe_drive(0, 0);
@@ -320,6 +324,7 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 
 				if (display->ball_count > 0) {
 					solenoid_actuate();
+					HAL_Delay(3000);
 
 					++(path->current_setpoint);
 					if (path->current_setpoint >= path->num_valid) {

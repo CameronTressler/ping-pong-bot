@@ -104,9 +104,9 @@ extern odom_t odometry;
 
 #define ANGLE_THRESHOLD 0.2
 
-#define KP_TURN_ADJUST 0.05
+#define KP_TURN_ADJUST -0.05
 #define MAX_ACCEPTABLE_ANGLE 0.5
-#define DIST_THRESHOLD 0.05
+#define DIST_THRESHOLD 0.10
 
 typedef enum {
 	TURN,
