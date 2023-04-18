@@ -18,6 +18,8 @@ typedef enum
     menu_2,
     menu_3,
     launch,
+	pb_not_calibrated,
+	pb_calibrate,
 	pb_record,
 	pb_go,
 	intervals,
@@ -93,6 +95,9 @@ void display_init(void);
 void display_write_string(char *str);
 
 void display_send_cmd(char cmd);
+
+void display_playback_calibrate(void);
+void display_not_calibrated(void);
 
 
 // Commands

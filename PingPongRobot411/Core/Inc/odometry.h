@@ -8,6 +8,7 @@
 #include "serialDisplay.h"
 #include "solenoid.h"
 #include <stdbool.h>
+#include <stdint.h>
 
 #define PI 3.1415926535
 
@@ -36,22 +37,19 @@ typedef struct {
 } imu_calib_t;
 
 void init_bno();
-int is_bno_calibrated(imu_calib_t* calib);
+bool check_bno_calibration(imu_calib_t* calib, double heading);
 
 #define EUL_DATA_X 0x1A
 #define LIA_DATA_X 0x28
 
 ///////////////////////////////////////////////////////////////////////////////
-// ------- ADXL ---------------------------------------------------------------
-///////////////////////////////////////////////////////////////////////////////
-
-
-///////////////////////////////////////////////////////////////////////////////
 // ------- ODOM ---------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
-// Output rate for fusion data is 100Hz.
-#define ODOM_UPDATE_RT 50.0
+// Output rate for fusion data is in Hz.
+#define ODOM_UPDATE_RT 100.0
+
+#define MG_TO_MS2 101.971621
 
 typedef union {
 	struct {
@@ -92,10 +90,12 @@ typedef struct {
 	uint8_t zero_count;
 
 	bool bno_calibrated;
+	bool adxl_calibrated;
+	int16_t adxl_offset;
 } odom_t;
 
 #define CALIB_LIFE 100
-#define ZERO_THRESHOLD 1
+#define ZERO_THRESHOLD 3
 
 extern imu_calib_t bno_calibration;
 extern odom_t odometry;
@@ -141,5 +141,31 @@ double get_angle_to_setpoint(odom_t* odom, path_t* path);
 double get_distance_to_setpoint(odom_t* odom, path_t* path);
 
 extern path_t path;
+
+///////////////////////////////////////////////////////////////////////////////
+// ------- ADXL ---------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+
+// The ADXL communicates over I2C with the following address.
+#define ADXL_ADDR 			0x1D
+
+// register used to enable ADXL measurement mode
+#define ADXL_PWR_CTL_REG	0x2D
+
+// register used to format output data from ADXL
+#define ADXL_DATA_FMT_REG	0x31
+
+// ADXL data registers
+#define ADXL_X_LSB			0x32
+#define ADXL_X_MSB			0x33
+#define ADXL_Y_LSB			0x34
+#define ADXL_Y_MSB			0x35
+#define ADXL_Z_LSB			0x36
+#define ADXL_Z_MSB			0x37
+
+void init_adxl(void);
+double get_accel(void);
+void adxl_calibrate(odom_t *odom);
+
 
 #endif

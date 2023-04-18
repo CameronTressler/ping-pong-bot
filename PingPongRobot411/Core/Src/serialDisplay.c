@@ -244,6 +244,28 @@ void display_intervals_low(void) {
 	}
 }
 
+void display_playback_calibrate(void) {
+	if(display.change) {
+		display.top_text = "Go to back right                        ";
+		display.bottom_text = "A: Ready                                ";
+
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
+void display_not_calibrated(void) {
+	if (display.change) {
+		display.top_text = "Please calibrate                        ";
+		display.bottom_text = "B: Back                                 ";
+
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
 
 void display_send_data(char data) {
 	char data_u, data_l;

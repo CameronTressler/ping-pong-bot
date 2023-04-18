@@ -260,7 +260,8 @@ void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
 
-	if (odometry.i % 2 == 0) {
+//	if (odometry.i % 2 == 1) {
+	if (true) {
 		update_odom(&odometry, hbridges, ultras);
 
 		if (path.cmds_active) {

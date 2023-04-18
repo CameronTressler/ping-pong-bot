@@ -146,6 +146,7 @@ int main(void)
 
   init_odom(&odometry);
   init_bno();
+  init_adxl();
 
   // Start IMU timer
   HAL_TIM_Base_Start_IT(&htim10);
@@ -238,7 +239,13 @@ int main(void)
 
 			  // Go to playback record
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  curr_state = pb_record;
+				  if (odometry.bno_calibrated) {
+					  curr_state = pb_not_calibrated;
+				  }
+				  else {
+					  curr_state = pb_calibrate;
+				  }
+
 				  display.change = true;
 
 				  // Reset path before creating new setpoints.
@@ -349,6 +356,43 @@ int main(void)
 				  set_PWM(hbridges + 2, 0);
 				  set_PWM(hbridges + 3, 0);
 				  curr_state = menu_1;
+				  display.change = true;
+			  }
+
+			  break;
+		  }
+
+		  case pb_not_calibrated: {
+			  display.balls_displayed = false;
+			  controller_drive(&n64_status_curr);
+
+			  display_not_calibrated();
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_2;
+				  display.change = true;
+			  }
+			  if (odometry.bno_calibrated) {
+				  curr_state = pb_calibrate;
+				  display.change= true;
+			  }
+
+			  break;
+		  }
+
+		  case pb_calibrate: {
+			  display.balls_displayed = false;
+			  controller_drive(&n64_status_curr);
+
+			  display_playback_calibrate();
+
+			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  curr_state = pb_record;
+				  adxl_calibrate(&odometry);
+				  display.change = true;
+			  }
+			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+				  curr_state = menu_2;
 				  display.change = true;
 			  }
 
