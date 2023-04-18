@@ -142,6 +142,13 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	double accel = lin_accel.data.datum /** 4*/ / MG_TO_MS2;
 	double measured_velocity = odom->velocity + (accel / ODOM_UPDATE_RT);
 
+	// float sum_cmd = (hbridges[0].PWM + hbridges[1].PWM);
+
+	// If measured velocity and command are in opposite directions (measurement is inverted).
+//	if (measured_velocity * sum_cmd >= -0.001) {
+//		measured_velocity = 0.0;
+//	}
+
 	// Given odom->velocity as our previous velocity, use measured acceleration and predicted
 	// velocity to obtain a new velocity estimate.
 //	 double predicted_velocity =
@@ -152,10 +159,10 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	odom->velocity = (PREDICTED_RATIO * predicted_velocity) +
 //			   	     ((1 - PREDICTED_RATIO) * measured_velocity);
 
-//	++(odom->i);
-//	if (odom->i % 25 == 0) {
-//		printf("%d : %f : %f : %f : %f\n\r", bno_calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
-//	}
+	++(odom->i);
+	if (odom->i % 25 == 0) {
+		printf("%d : %f : %f : %f : %f\n\r", bno_calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
+	}
 
 	if (!odom->bno_calibrated) {
 		return;
@@ -238,6 +245,15 @@ bool facing_target(double angle_diff, double threshold) {
 void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 	switch(path->pb_state) {
 		case TURN: {
+			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
+//				printf("Dist: %.2f\n\r", get_distance_to_setpoint(odom, path));
+				safe_drive(0, 0);
+				path->pb_state = LAUNCH;
+
+//				printf("Transitioning from DRIVE to LAUNCH\n\r");
+			}
+
+
 			// Get angle to point relative to current heading, from 0 to 2PI.
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
@@ -270,25 +286,17 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 
 			if ((PI / 2.0) < angle_diff && angle_diff < (3 * PI / 2.0)) {
 				safe_drive(1.0f, KP_TURN_ADJUST * angle_diff);
+//				safe_drive(1.0f, 0);
+
 			}
 			else {
 				safe_drive(-1.0f, KP_TURN_ADJUST * angle_diff);
+//				safe_drive(-1.0f, 0);
+
 			}
 
-//			double forward_diff = fabs(angle_diff - PI);
-//			double backward_diff = fabs(angle_diff);
-//
-//			// If driving forwards.
-//			if (forward_diff > backward_diff) {
-//				safe_drive(0.5f, KP_TURN_ADJUST * angle_diff);
-//			}
-//			// If driving backwards.
-//			else {
-//				safe_drive(-0.5f, KP_TURN_ADJUST * angle_diff);
-//			}
-
 			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
-				printf("Dist: %.2f\n\r", get_distance_to_setpoint(odom, path));
+//				printf("Dist: %.2f\n\r", get_distance_to_setpoint(odom, path));
 				safe_drive(0, 0);
 				path->pb_state = LAUNCH;
 

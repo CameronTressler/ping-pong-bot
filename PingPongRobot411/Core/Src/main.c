@@ -207,7 +207,7 @@ int main(void)
 
 			  // Go to previous menu
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
-				  curr_state = menu_3;
+				  curr_state = menu_4;
 				  display.change = true;
 			  }
 
@@ -239,7 +239,7 @@ int main(void)
 
 			  // Go to playback record
 			  else if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
-				  if (odometry.bno_calibrated) {
+				  if (!odometry.bno_calibrated) {
 					  curr_state = pb_not_calibrated;
 				  }
 				  else {
@@ -261,7 +261,7 @@ int main(void)
 			  controller_drive(&n64_status_curr);
 			  // Go to next menu
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
-				  curr_state = menu_1;
+				  curr_state = menu_4;
 				  display.change = true;
 			  }
 
@@ -274,6 +274,31 @@ int main(void)
 			  // Go to intervals
 			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
 				  curr_state = display.intervals_distance_last;
+				  display.change = true;
+			  }
+
+			  break;
+		  }
+
+		  case menu_4: {
+			  display.balls_displayed = false;
+			  display_menu_4();
+			  controller_drive(&n64_status_curr);
+			  // Go to next menu
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
+				  curr_state = menu_1;
+				  display.change = true;
+			  }
+
+			  // Go to previous menu
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CU)) {
+				  curr_state = menu_3;
+				  display.change = true;
+			  }
+
+			  // Go to dynamic calibrate
+			  else if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_A)) {
+				  curr_state = dynamic_not_calibrated;
 				  display.change = true;
 			  }
 
@@ -358,6 +383,24 @@ int main(void)
 		  }
 
 		  case pb_not_calibrated: {
+		  			  display.balls_displayed = false;
+		  			  controller_drive(&n64_status_curr);
+
+		  			  display_not_calibrated();
+
+		  			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
+		  				  curr_state = menu_2;
+		  				  display.change = true;
+		  			  }
+		  			  if (odometry.bno_calibrated) {
+		  				  curr_state = pb_calibrate;
+		  				  display.change= true;
+		  			  }
+
+		  			  break;
+		  		  }
+
+		  case pb_not_calibrated: {
 			  display.balls_displayed = false;
 			  controller_drive(&n64_status_curr);
 
@@ -404,17 +447,18 @@ int main(void)
 				  add_setpoint(&odometry, &path);
 				}
 
-				  // B button: finish path
-				  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
-					  curr_state = pb_go;
-					  display.change = true;
+			  // B button: finish path
+			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B) &&
+				 path.num_valid > 0) {
+				  curr_state = pb_go;
+				  display.change = true;
 
-					  // Set commands from path planning to be active.
-					  path.cmds_active = true;
-				  }
+				  // Set commands from path planning to be active.
+				  path.cmds_active = true;
+			  }
 
-					  break;
-				  }
+				  break;
+			  }
 
 		  case pb_go: {
 			  display.balls_displayed = true;

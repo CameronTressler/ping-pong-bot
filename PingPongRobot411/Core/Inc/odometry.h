@@ -103,8 +103,8 @@ extern odom_t odometry;
 #define MAX_SETPOINTS 10
 
 #define ANGLE_THRESHOLD 0.2
-#define KP_TURN_ADJUST -0.15
-#define MAX_ACCEPTABLE_ANGLE 1.0
+#define KP_TURN_ADJUST -0.1
+#define MAX_ACCEPTABLE_ANGLE 2
 #define DIST_THRESHOLD 0.0005
 
 typedef enum {

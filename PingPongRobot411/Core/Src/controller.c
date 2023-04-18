@@ -47,30 +47,41 @@ void controller_adjust_launch_speed(float launch_pwm) {
 void controller_drive(n64_t *n64_state) {
 	float forward = 0.0;
 	float left = 0.0;
-	  if (n64_state->button_status[N64_DU] == n64_state->button_status[N64_DD]) {
+	  if (n64_state->button_status[N64_DU] == n64_state->button_status[N64_DD] &&
+		  n64_state->button_status[N64_L] == n64_state->button_status[N64_R]) {
 		  forward = 0;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_DU]) {
 		  forward = 1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_DD]){
 		  forward = -1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 
 	  if (n64_state->button_status[N64_L] == n64_state->button_status[N64_R]) {
 		  left = 0;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_L]) {
 		  left = 1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 	  else if (n64_state->button_status[N64_R]) {
 		  left = -1;
+		  safe_drive(forward, left);
+		  return;
 	  }
 
 	  // TODO: consider using constant values for forward/backward + turning at the same time
 	  // could have smooth predetermined values instead of drive logic.
-
-	  safe_drive(forward, left);
 }
 
 
