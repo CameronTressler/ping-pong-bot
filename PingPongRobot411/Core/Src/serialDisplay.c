@@ -187,6 +187,24 @@ void display_menu_3(void) {
 
 }
 
+void display_menu_4(void) {
+	if(display.change) {
+		display.top_text = "Dynamics                                ";
+		display.bottom_text = "Press A                                 ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
+
+void display_dynamic_calibrate(void) {
+	if(display.change) {
+
+	}
+}
+
+void
+
 void display_welcome(void) {
 	if(display.change) {
 		display.top_text = "WELCOME                                 ";
