@@ -197,13 +197,28 @@ void display_menu_4(void) {
 	}
 }
 
-void display_dynamic_calibrate(void) {
-	if(display.change) {
+void display_dynamic_countdown(void) {
+	display.top_text = "Dynamic                                 ";
+	display.bottom_text = "";
 
-	}
+	char bottom_str[50];
+	strcpy(bottom_str, "Starting in: ");
+
+	display.bottom_text = strcat(bottom_str, countdown_display_table[display.countdown]);
+
+	display_write_string(display.top_text);
+	display_write_string(display.bottom_text);
 }
 
-void
+void display_dynamic_calibrate(void) {
+	if(display.change) {
+		display.top_text = "Align table edge                               ";
+		display.bottom_text = "Press A                                 ";
+		display_write_string(display.top_text);
+		display_write_string(display.bottom_text);
+		display.change = false;
+	}
+}
 
 void display_welcome(void) {
 	if(display.change) {
