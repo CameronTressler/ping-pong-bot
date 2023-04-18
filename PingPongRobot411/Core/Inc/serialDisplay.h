@@ -79,6 +79,8 @@ void display_menu_2(void);
 
 void display_menu_3(void);
 
+void display_menu_4(void);
+
 void display_intervals_high(void);
 
 void display_intervals_medium(void);
@@ -88,6 +90,12 @@ void display_intervals_low(void);
 void display_intervals_countdown(void);
 
 void display_freeplay_speed(void);
+
+void display_dynamic_calibrate(void);
+
+void display_dynamic_countdown(void);
+
+
 
 // Initialization and commands
 void display_init(void);
