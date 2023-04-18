@@ -103,7 +103,7 @@ extern odom_t odometry;
 #define MAX_SETPOINTS 10
 
 #define ANGLE_THRESHOLD 0.2
-#define KP_TURN_ADJUST -0.1
+#define KP_TURN_ADJUST 5
 #define MAX_ACCEPTABLE_ANGLE 2
 #define DIST_THRESHOLD 0.0005
 
@@ -145,6 +145,13 @@ extern path_t path;
 // ------- dynamic ------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
+#define DYNAMIC_SPEED 0.3
+
+extern bool dynamic_forward;
+extern double dynamic_angle;
+extern bool dynamic_cmds_active;
+
+void set_dynamic_angle(double angle);
 void move_dynamic(odom_t* odom, ultra_t* ultras);
 
 ///////////////////////////////////////////////////////////////////////////////

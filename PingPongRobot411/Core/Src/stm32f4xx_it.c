@@ -260,16 +260,13 @@ void TIM1_UP_TIM10_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
 
-//	if (odometry.i % 2 == 1) {
-	if (true) {
-		update_odom(&odometry, hbridges, ultras);
+	update_odom(&odometry, hbridges, ultras);
 
-		if (path.cmds_active) {
-			set_playback_cmds(&odometry, &path, &display);
-		}
+	if (path.cmds_active) {
+		set_playback_cmds(&odometry, &path, &display);
 	}
-	else {
-		++(odometry.i);
+	else if (dynamic_cmds_active) {
+		move_dynamic(&odometry, ultras);
 	}
 
   /* USER CODE END TIM1_UP_TIM10_IRQn 0 */

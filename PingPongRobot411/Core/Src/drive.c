@@ -52,8 +52,8 @@ void safe_drive(float lin_forward, float rot_left) {
 		right_wheel *= 0.3;
 	}
 	else {
-		left_wheel *= 0.15;
-		right_wheel *= 0.15;
+		left_wheel *= 0.25;
+		right_wheel *= 0.25;
 	}
 
 	//printf("LW: %.3f\t\tRW: %.3f\n\r", left_wheel, right_wheel);

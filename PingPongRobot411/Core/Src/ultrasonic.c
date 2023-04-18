@@ -63,9 +63,16 @@ bool is_off_table(ultra_t* ultra) {
 	return false;
 }
 
-bool ultras_definitely_off_table() {
+bool definitely_off_table(ultra_t* ultra) {
+	if (ultra->off_table >= DEFINITELY_OFF_TABLE_THRESHOLD) {
+		return true;
+	}
+	return false;
+}
+
+bool ultras_definitely_off_table(void) {
 	for (uint8_t i = 0; i < NUM_ULTRAS; ++i) {
-		if (ultras[i].off_table >= DEFINITELY_OFF_TABLE_THRESHOLD) {
+		if (definitely_off_table(ultras + i)) {
 			return true;
 		}
 	}

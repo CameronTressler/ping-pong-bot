@@ -212,7 +212,7 @@ void display_dynamic_countdown(void) {
 
 void display_dynamic_calibrate(void) {
 	if(display.change) {
-		display.top_text = "Align table edge                               ";
+		display.top_text = "Align table edge                        ";
 		display.bottom_text = "Press A                                 ";
 		display_write_string(display.top_text);
 		display_write_string(display.bottom_text);

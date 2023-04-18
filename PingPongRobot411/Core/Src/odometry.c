@@ -159,10 +159,10 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	odom->velocity = (PREDICTED_RATIO * predicted_velocity) +
 //			   	     ((1 - PREDICTED_RATIO) * measured_velocity);
 
-	++(odom->i);
-	if (odom->i % 25 == 0) {
-		printf("%d : %f : %f : %f : %f\n\r", bno_calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
-	}
+//	++(odom->i);
+//	if (odom->i % 25 == 0) {
+//		printf("%d : %f : %f : %f : %f\n\r", bno_calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
+//	}
 
 	if (!odom->bno_calibrated) {
 		return;
@@ -390,8 +390,41 @@ path_t path;
 // ------- dynamic ------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 
+bool dynamic_forward;
+bool dynamic_cmds_active;
+double dynamic_angle;
+
+void set_dynamic_angle(double angle) {
+	dynamic_angle = angle;
+}
+
 void move_dynamic(odom_t* odom, ultra_t* ultras) {
-	return;
+
+	if (definitely_off_table(ultras + FRONT_ULTRA)) {
+		HAL_Delay(1500);
+		dynamic_forward = false;
+	}
+	else if (definitely_off_table(ultras + REAR_ULTRA)) {
+		HAL_Delay(1500);
+		dynamic_forward = true;
+	}
+
+	double d_theta = convert_to_std_rad(dynamic_angle - odom->cur_pos.heading);
+	if (d_theta > PI) {
+		d_theta -= (2.0 * PI);
+	}
+
+	++(odom->i);
+	if (odom->i % 10 == 0) {
+		printf("%.3f\t\t%.3f\n\r", d_theta, odom->cur_pos.heading);
+	}
+
+	if (dynamic_forward) {
+		safe_drive(1.0f, KP_TURN_ADJUST * d_theta);
+	}
+	else {
+		safe_drive(-1.0f, KP_TURN_ADJUST * d_theta);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

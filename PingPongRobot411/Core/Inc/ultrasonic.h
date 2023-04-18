@@ -31,8 +31,10 @@ void update_ultra(ultra_t* ultra, unsigned int current_count);
 // Returns whether the ultra deems itself probably off the table.
 bool is_off_table(ultra_t* ultra);
 
+bool definitely_off_table(ultra_t* ultra);
+
 // Returns whether any ultrasonic is definitely off the table.
-bool definitely_is_off_table();
+bool ultras_definitely_off_table();
 
 extern ultra_t ultras[NUM_ULTRAS];
 

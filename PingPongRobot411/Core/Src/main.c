@@ -166,6 +166,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
   int n64_count = 0;
+  dynamic_cmds_active = false;
 
 
   while (1)
@@ -414,6 +415,8 @@ int main(void)
 				  curr_state = dynamic_countdown;
 				  display.countdown = 3;
 				  display.change = true;
+
+				  set_dynamic_angle(odometry.cur_pos.heading);
 			  }
 
 			  break;
@@ -457,15 +460,15 @@ int main(void)
 		  }
 
 		  case dynamic: {
-			  display.balls_displayed = true;
-			  display_interval_begin();
+			  display.balls_displayed = false;
+			  display_intervals_begin();
 
 			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  curr_state = menu_4;
 				  display.change = true;
 			  }
 
-			  move_dynamic(&odometry, &ultras);
+			  dynamic_cmds_active = true;
 
 			  // Launch at constant interval only if interrupt hasn't been started
 			  if(!htim5_int){
@@ -503,6 +506,7 @@ int main(void)
 					set_PWM(hbridges + 3, 0.0f);
 
 				  curr_state = menu_4;
+				  dynamic_cmds_active = false;
 				  display.change = true;
 				  htim5_int = false;
 				  if(HAL_TIM_Base_Stop_IT(&htim5) != HAL_OK) {
