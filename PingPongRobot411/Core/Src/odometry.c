@@ -412,10 +412,10 @@ void move_dynamic(odom_t* odom, ultra_t* ultras) {
 		d_theta -= (2.0 * PI);
 	}
 
-	++(odom->i);
-	if (odom->i % 10 == 0) {
-		printf("%.3f\t\t%.3f\n\r", d_theta, odom->cur_pos.heading);
-	}
+//	++(odom->i);
+//	if (odom->i % 10 == 0) {
+//		printf("%.3f\t\t%.3f\n\r", d_theta, odom->cur_pos.heading);
+//	}
 
 	if (dynamic_forward) {
 		safe_drive(1.0f, KP_TURN_ADJUST * d_theta);
