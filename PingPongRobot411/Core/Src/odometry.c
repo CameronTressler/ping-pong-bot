@@ -401,11 +401,9 @@ void set_dynamic_angle(double angle) {
 void move_dynamic(odom_t* odom, ultra_t* ultras) {
 
 	if (definitely_off_table(ultras + FRONT_ULTRA)) {
-		HAL_Delay(1500);
 		dynamic_forward = false;
 	}
 	else if (definitely_off_table(ultras + REAR_ULTRA)) {
-		HAL_Delay(1500);
 		dynamic_forward = true;
 	}
 
