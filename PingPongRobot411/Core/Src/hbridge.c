@@ -43,16 +43,20 @@ void init_hbridges() {
 }
 
 void set_PWM(hbridge_t* hbridge, float PWM) {
+	if (hbridge->PWM == PWM) {
+		return;
+	}
+
 	hbridge->PWM = PWM;
 
 	// If we go forwards
 	if (PWM >= 0) {
-		*(hbridge->CCR) = (uint32_t)((float) 255)* PWM;
+		*(hbridge->CCR) = (uint32_t)(((float) 255)* PWM);
 		HAL_GPIO_WritePin(hbridge->GPIOx, hbridge->ndir, 0);
 		HAL_GPIO_WritePin(hbridge->GPIOx, hbridge->dir, 1);
 		hbridge->PinState = 0;
 	} else {
-		*(hbridge->CCR) = (uint32_t)((float) 255)* PWM * -1;
+		*(hbridge->CCR) = (uint32_t)(((float) 255)* PWM * -1);
 		HAL_GPIO_WritePin(hbridge->GPIOx, hbridge->ndir, 1);
 		HAL_GPIO_WritePin(hbridge->GPIOx, hbridge->dir, 0);
 		hbridge->PinState = 1;

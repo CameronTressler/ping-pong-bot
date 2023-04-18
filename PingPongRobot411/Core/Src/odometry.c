@@ -139,7 +139,7 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	lin_accel.data.datum -= odom->adxl_offset;
 
 	// Update acceleration in m/s^2.
-	double accel = lin_accel.data.datum * 4 / MG_TO_MS2;
+	double accel = lin_accel.data.datum /** 4*/ / MG_TO_MS2;
 	double measured_velocity = odom->velocity + (accel / ODOM_UPDATE_RT);
 
 	// Given odom->velocity as our previous velocity, use measured acceleration and predicted
@@ -151,6 +151,11 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 //	odom->velocity = predicted_velocity;
 //	odom->velocity = (PREDICTED_RATIO * predicted_velocity) +
 //			   	     ((1 - PREDICTED_RATIO) * measured_velocity);
+
+//	++(odom->i);
+//	if (odom->i % 25 == 0) {
+//		printf("%d : %f : %f : %f : %f\n\r", bno_calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
+//	}
 
 	if (!odom->bno_calibrated) {
 		return;
@@ -182,11 +187,6 @@ void update_odom(odom_t* odom, hbridge_t* hbridges, ultra_t* ultras) {
 	// Correct position.
 //	if (ultras_off_table()) {
 //
-//	}
-
-	++(odom->i);
-//	if (odom->i % 25 == 0) {
-//		printf("%d : %f : %f : %f : %f\n\r", bno_calibration.data, odom->cur_pos.heading, odom->velocity, odom->cur_pos.x, odom->cur_pos.y);
 //	}
 }
 
@@ -254,11 +254,11 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 				(0 < angle_diff && angle_diff < PI / 2) ||
 				(PI < angle_diff && angle_diff < 3 * PI / 2)
 			) {
-				safe_drive(0.0f, -0.9f);
+				safe_drive(0.0f, -1.0f);
 			}
 			// Else we need to turn counter clockwise.
 			else {
-				safe_drive(0.0f, 0.9f);
+				safe_drive(0.0f, 1.0f);
 			}
 
 			
@@ -268,11 +268,11 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 			// Get angle to point relative to current heading, from 0 to 2PI.
 			double angle_diff = get_angle_to_setpoint(odom, path);
 
-			if ((PI / 4.0) / angle_diff && angle_diff < (3 * PI / 4.0)) {
-				safe_drive(-0.5f, KP_TURN_ADJUST * angle_diff);
+			if ((PI / 2.0) < angle_diff && angle_diff < (3 * PI / 2.0)) {
+				safe_drive(1.0f, KP_TURN_ADJUST * angle_diff);
 			}
 			else {
-				safe_drive(0.5f, KP_TURN_ADJUST * angle_diff);
+				safe_drive(-1.0f, KP_TURN_ADJUST * angle_diff);
 			}
 
 //			double forward_diff = fabs(angle_diff - PI);
@@ -288,13 +288,14 @@ void set_playback_cmds(odom_t* odom, path_t* path, display_t* display) {
 //			}
 
 			if (get_distance_to_setpoint(odom, path) < DIST_THRESHOLD) {
+				printf("Dist: %.2f\n\r", get_distance_to_setpoint(odom, path));
 				safe_drive(0, 0);
 				path->pb_state = LAUNCH;
 
 //				printf("Transitioning from DRIVE to LAUNCH\n\r");
 			}
 			else if
-			(!facing_target(angle_diff, 0.5)) {
+			(!facing_target(angle_diff, MAX_ACCEPTABLE_ANGLE)) {
 				safe_drive(0, 0);
 				path->pb_state = TURN;
 

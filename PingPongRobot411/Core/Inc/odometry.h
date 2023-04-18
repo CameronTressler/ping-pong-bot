@@ -95,7 +95,7 @@ typedef struct {
 } odom_t;
 
 #define CALIB_LIFE 100
-#define ZERO_THRESHOLD 3
+#define ZERO_THRESHOLD 2
 
 extern imu_calib_t bno_calibration;
 extern odom_t odometry;
@@ -103,10 +103,9 @@ extern odom_t odometry;
 #define MAX_SETPOINTS 10
 
 #define ANGLE_THRESHOLD 0.2
-
-#define KP_TURN_ADJUST -0.05
-#define MAX_ACCEPTABLE_ANGLE 0.5
-#define DIST_THRESHOLD 0.10
+#define KP_TURN_ADJUST -0.15
+#define MAX_ACCEPTABLE_ANGLE 1.0
+#define DIST_THRESHOLD 0.0005
 
 typedef enum {
 	TURN,
