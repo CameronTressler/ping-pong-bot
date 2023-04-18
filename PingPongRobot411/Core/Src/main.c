@@ -346,11 +346,6 @@ int main(void)
 				  }
 			  }
 
-
-			  if (n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_CD)) {
-
-			  }
-
 			  // Exit
 			  if(n64_button_pressed(&n64_status_prev, &n64_status_curr, N64_B)) {
 				  set_PWM(hbridges + 2, 0);
